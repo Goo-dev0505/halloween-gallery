@@ -11,22 +11,29 @@
   <meta name="twitter:card" content="summary_large_image">
   <!-- 公開時に og:image を追加し、assets/ogp.png の絶対URLへ置換（公開ドメイン未確定） -->
   <title>ハロウィン・ノート展（仮）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css">
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script defer src="assets/site-config.js"></script>
   <script defer src="assets/app.js"></script>
 </head>
 <body>
+  <div class="floaties" aria-hidden="true"><span>👻</span><span>🎃</span><span>🦇</span><span>👻</span></div>
+  <svg class="web tl" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1"><path d="M0 0L120 120M0 0L60 120M0 0L120 60M0 0L0 120M0 0L120 0"/><path d="M0 30Q18 18 30 0M0 60Q36 36 60 0M0 90Q54 54 90 0M0 118Q72 72 118 0"/></g></svg>
+  <svg class="web tr" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1"><path d="M0 0L120 120M0 0L60 120M0 0L120 60M0 0L0 120M0 0L120 0"/><path d="M0 30Q18 18 30 0M0 60Q36 36 60 0M0 90Q54 54 90 0M0 118Q72 72 118 0"/></g></svg>
+  <svg class="web bl" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1"><path d="M0 0L120 120M0 0L60 120M0 0L120 60M0 0L0 120M0 0L120 0"/><path d="M0 30Q18 18 30 0M0 60Q36 36 60 0M0 90Q54 54 90 0M0 118Q72 72 118 0"/></g></svg>
+  <svg class="web br" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1"><path d="M0 0L120 120M0 0L60 120M0 0L120 60M0 0L0 120M0 0L120 0"/><path d="M0 30Q18 18 30 0M0 60Q36 36 60 0M0 90Q54 54 90 0M0 118Q72 72 118 0"/></g></svg>
   <a class="skip-link" href="#main">本文へ移動</a>
   <header class="site-header">
     <nav class="nav wrap" aria-label="メインナビゲーション">
       <a class="brand" href="#top" aria-label="ハロウィン・ノート展 トップ">ハロウィン・ノート展</a>
-      <ul class="nav-list">
-        <li><a href="#about">企画について</a></li>
+      <ul class="nav-list" role="list">
+        <li><a href="#top" aria-current="page">入口</a></li>
         <li><a href="#creators">クリエイター</a></li>
         <li><a href="#gallery">美術館</a></li>
-        <li><a href="#tool">ポスターツール</a></li>
-        <li><a href="#join">参加方法</a></li>
+        <li><a href="#join">参加する</a></li>
       </ul>
     </nav>
   </header>
@@ -34,10 +41,10 @@
   <div id="demoNotice" class="demo-notice" role="note" hidden>サンプル展示中：下のクリエイターと作品は、デザイン確認用の架空データです。日時のカウントダウンもデモ表示です。</div>
 
   <main id="main">
+    <div class="view" data-view="top">
     <section class="hero block" id="top" aria-labelledby="siteTitle">
       <div class="wrap hero-layout">
         <div class="hero-copy">
-          <p class="eyebrow">ONLINE EXHIBITION</p>
           <h1 id="siteTitle">ハロウィン・ノート展（仮）</h1>
           <p id="siteLead">作品から、まだ知らないクリエイターへ。</p>
           <p id="eventStatus" class="status" role="status">開催情報を準備中です</p>
@@ -64,7 +71,6 @@
             <span aria-hidden="true">🎃</span>
             <span class="sr-only">主催者キャラクター画像は準備中です</span>
           </div>
-          <p class="eyebrow">案内役</p>
           <h2 id="organizerName">主催者名 準備中</h2>
           <p><a id="organizerProfile" aria-disabled="true">主催者プロフィールは準備中です。</a></p>
           <p class="statement-placeholder">企画趣旨の原文は準備中です。</p>
@@ -72,12 +78,11 @@
         </aside>
       </div>
       <span class="magic-drip" aria-hidden="true"></span>
-      <span class="flying-crow" aria-hidden="true">🐦‍⬛</span>
+      <span class="flying-crow" aria-hidden="true"><svg viewBox="0 0 64 36" focusable="false"><path d="M32 14c1.8 0 3.4 1.2 4.4 3.2L62 4c-6 8-11.5 13.5-20 17l-4 2 6 11-10-6-2 2-2-2-10 6 6-11-4-2C13.5 17.5 8 12 2 4l25.6 13.2c1-2 2.6-3.2 4.4-3.2zm-4-1.5-4.5 1 4.3.4z"/></svg></span>
     </section>
 
     <section class="block about reveal" id="about" aria-labelledby="aboutTitle">
       <div class="wrap narrow">
-        <p class="eyebrow">ABOUT</p>
         <h2 id="aboutTitle">この企画について</h2>
         <p class="section-intro">主催者からの企画趣旨を準備中です。</p>
         <div id="organizerCharacterAbout" class="organizer-character organizer-character-about" role="img" aria-label="主催者キャラクター画像は準備中です">
@@ -95,9 +100,26 @@
       </div>
     </section>
 
+    <div class="block doors-block">
+      <div class="wrap">
+        <nav class="doors" aria-label="展示室へ">
+          <a class="door" href="#creators"><span class="door-icon" aria-hidden="true">🎠</span><span class="door-title">参加クリエイター</span><span class="door-note">メリーゴーランドで人に出会う</span></a>
+          <a class="door" href="#gallery"><span class="door-icon" aria-hidden="true">🖼️</span><span class="door-title">夜の美術館</span><span class="door-note">額縁に並ぶ作品をめぐる</span></a>
+          <a class="door" href="#join"><span class="door-icon" aria-hidden="true">🎃</span><span class="door-title">参加する</span><span class="door-note">ポスターツールと参加方法</span></a>
+        </nav>
+      </div>
+    </div>
+    </div>
+
+    <div class="view" data-view="creators" hidden>
+      <div class="view-bar">
+        <div class="wrap view-bar-inner">
+          <a class="view-back" href="#top">入口へ戻る</a>
+          <span class="view-count"><strong data-count-mirror>0</strong> <span data-count-label-mirror>人が参加しています</span></span>
+        </div>
+      </div>
     <section class="block creators-section reveal" id="creators" aria-labelledby="creatorsTitle">
       <div class="wrap">
-        <p class="eyebrow">CREATORS</p>
         <h2 id="creatorsTitle">参加クリエイター</h2>
         <p class="section-intro">参加者の確認後、こちらに紹介を掲載します。</p>
         <div class="carousel panel" id="carousel" aria-label="クリエイターのメリーゴーランド">
@@ -105,7 +127,14 @@
             <h3>クリエイターをめぐる</h3>
             <p>参加者の掲載準備中です。</p>
           </div>
+          <svg class="canopy" viewBox="0 0 900 48" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <defs><linearGradient id="canopyGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4a340"/><stop offset="1" stop-color="#ff7a1a"/></linearGradient></defs>
+            <path d="M0 8Q37.5 44 75 8Q112.5 44 150 8Q187.5 44 225 8Q262.5 44 300 8Q337.5 44 375 8Q412.5 44 450 8Q487.5 44 525 8Q562.5 44 600 8Q637.5 44 675 8Q712.5 44 750 8Q787.5 44 825 8Q862.5 44 900 8V0H0Z" fill="url(#canopyGrad)"/>
+            <path d="M0 8H900" stroke="#d9b45b" stroke-width="4"/>
+          </svg>
           <div class="stage" id="carouselStage" aria-label="クリエイター表示エリア">
+            <span class="pole" aria-hidden="true"></span>
+            <span class="floor" aria-hidden="true"></span>
             <div class="carousel-ring" id="carouselRing" aria-live="polite">
               <p class="empty-note">展示の準備中です。</p>
             </div>
@@ -132,10 +161,17 @@
         </div>
       </div>
     </section>
+    </div>
 
+    <div class="view" data-view="gallery" hidden>
+      <div class="view-bar">
+        <div class="wrap view-bar-inner">
+          <a class="view-back" href="#top">入口へ戻る</a>
+          <span class="view-count"><strong data-count-mirror>0</strong> <span data-count-label-mirror>人が参加しています</span></span>
+        </div>
+      </div>
     <section class="block hall reveal" id="gallery" aria-labelledby="galleryTitle">
       <div class="wrap">
-        <p class="eyebrow">GALLERY</p>
         <h2 id="galleryTitle">夜の美術館</h2>
         <p class="section-intro">作品の掲載準備中です。</p>
         <h3 class="list-title">作品一覧</h3>
@@ -150,10 +186,17 @@
         </div>
       </div>
     </section>
+    </div>
 
+    <div class="view" data-view="join" hidden>
+      <div class="view-bar">
+        <div class="wrap view-bar-inner">
+          <a class="view-back" href="#top">入口へ戻る</a>
+          <span class="view-count"><strong data-count-mirror>0</strong> <span data-count-label-mirror>人が参加しています</span></span>
+        </div>
+      </div>
     <section class="block tool-section reveal" id="tool" aria-labelledby="toolTitle">
       <div class="wrap">
-        <p class="eyebrow">POSTER TOOL</p>
         <h2 id="toolTitle">ポスターツール</h2>
         <div class="panel tool-panel">
           <div class="poster-placeholder" aria-hidden="true"><span>✦</span></div>
@@ -168,7 +211,6 @@
 
     <section class="block join-section reveal" id="join" aria-labelledby="joinTitle">
       <div class="wrap narrow">
-        <p class="eyebrow">JOIN</p>
         <h2 id="joinTitle">参加方法</h2>
         <p class="section-intro">正式な参加ルールを準備中です。確定後に手順を掲載します。</p>
         <ol class="steps" id="joinSteps">
@@ -182,6 +224,7 @@
         </div>
       </div>
     </section>
+    </div>
   </main>
 
   <footer class="site-footer">

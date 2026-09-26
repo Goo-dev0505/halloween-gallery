@@ -278,6 +278,7 @@
     ring.classList.add('ring');
     if (carousel.frame) cancelAnimationFrame(carousel.frame);
     carousel.frame = 0; carousel.last = 0; carousel.angle = 0;
+    if (viewOf(ring)?.hidden) return; // 非表示ビュー内では描画しない（表示時に showView が再呼び出しする）
     if (state.failed || !state.rows.length) {
       ring.replaceChildren(el('p', 'empty-note', state.failed ? '展示を準備中です。' : '最初の参加クリエイターをお待ちしています。'));
       outer.classList.add('is-empty');
@@ -336,9 +337,95 @@
   function gotoCreator(id) {
     state.filter = 'all'; state.query = '';
     if ($('creatorSearch')) $('creatorSearch').value = '';
-    renderCreators(); focusCard($(`creator-${id}`));
+    renderCreators();
+    if (viewOf($('creatorGrid'))?.hidden) { navigate(`#creators?id=${encodeURIComponent(id)}`); return; } // 画面をまたぐ：先にビュー切替
+    focusCard($(`creator-${id}`));
   }
-  function gotoWork(id) { state.room = 'all'; renderWorks(); focusCard($(`work-${id}`)); }
+  function gotoWork(id) {
+    state.room = 'all'; renderWorks();
+    if (viewOf($('workGrid'))?.hidden) { navigate(`#gallery?id=${encodeURIComponent(id)}`); return; }
+    focusCard($(`work-${id}`));
+  }
+  /* ---------- ルーティング（入口はスクロール／展示室は画面切り替え） ---------- */
+  const VIEWS = ['top', 'creators', 'gallery', 'join'];
+  const VIEW_ALIAS = { about: 'top', tool: 'join' }; // 旧アンカーの後方互換：ビューに切り替えた上で該当セクションへスクロール
+  const SWITCH_MS = 400;                              // body.is-switching を付ける時間（CSS の暗転アニメと合わせる）
+  const router = { view: '', timer: 0 };
+  function viewOf(node) { return node?.closest?.('.view') || null; }
+  function parseHash(hash) {
+    const raw = String(hash || '').replace(/^#/, '');
+    const qIndex = raw.indexOf('?');
+    const name = qIndex >= 0 ? raw.slice(0, qIndex) : raw;
+    const params = new URLSearchParams(qIndex >= 0 ? raw.slice(qIndex + 1) : '');
+    const anchor = VIEW_ALIAS[name] ? name : '';
+    const view = VIEWS.includes(name) ? name : (VIEW_ALIAS[name] || 'top');
+    return { view, anchor, params };
+  }
+  function isRoutableHash(hash) { const name = String(hash || '').replace(/^#/, '').split('?')[0]; return VIEWS.includes(name) || Boolean(VIEW_ALIAS[name]); }
+  function showView(name) {
+    if (!VIEWS.includes(name)) name = 'top';
+    const changed = router.view !== name;
+    document.querySelectorAll('.view').forEach(node => { node.hidden = node.dataset.view !== name; });
+    document.body.dataset.view = name;
+    document.querySelectorAll('.nav-list a[href^="#"]').forEach(a => {
+      if (parseHash(a.getAttribute('href')).view === name && !a.getAttribute('href').includes('?')) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    router.view = name;
+    // メリーゴーランドは表示中のビューでだけ回す（hidden 中は innerWidth 依存の計算がずれる）
+    if (name === 'creators') renderCarousel();
+    else if (carousel.frame) { cancelAnimationFrame(carousel.frame); carousel.frame = 0; carousel.last = 0; }
+    return changed;
+  }
+  function applyRoute() {
+    const { view, anchor, params } = parseHash(location.hash);
+    const changed = view !== router.view;
+    const run = () => {
+      showView(view);
+      let target = null;
+      if (view === 'gallery' && params.has('room')) {
+        const button = $('galleryRooms')?.querySelector(`[data-room="${CSS.escape(params.get('room'))}"]`);
+        if (button && !button.disabled) { state.room = button.dataset.room; renderWorks(); }
+      }
+      if (view === 'creators' && params.has('id')) {
+        state.filter = 'all'; state.query = ''; if ($('creatorSearch')) $('creatorSearch').value = '';
+        renderCreators(); target = $(`creator-${params.get('id')}`);
+      } else if (view === 'gallery' && params.has('id')) {
+        state.room = 'all'; renderWorks(); target = $(`work-${params.get('id')}`);
+      }
+      if (target) { requestAnimationFrame(() => focusCard(target)); return; }
+      if (anchor && $(anchor)) { requestAnimationFrame(() => $(anchor).scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' })); return; }
+      if (changed) window.scrollTo(0, 0);
+    };
+    if (!changed || reduced) { run(); return; }
+    clearTimeout(router.timer);
+    document.body.classList.remove('is-switching');
+    void document.body.offsetWidth; // アニメを再始動させる
+    document.body.classList.add('is-switching');
+    setTimeout(run, SWITCH_MS * 0.4);  // 暗転が最も濃いタイミングで中身を差し替える
+    router.timer = setTimeout(() => document.body.classList.remove('is-switching'), SWITCH_MS);
+  }
+  function navigate(hash) {
+    if (location.hash !== hash) history.pushState(null, '', hash);
+    applyRoute();
+  }
+  function bindRouter() {
+    document.addEventListener('click', e => {
+      const a = e.target.closest('a[href^="#"]');
+      if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const href = a.getAttribute('href');
+      if (!isRoutableHash(href)) return; // #main（スキップリンク）などは既定のジャンプに任せる
+      e.preventDefault();
+      navigate(href);
+    });
+    addEventListener('hashchange', applyRoute);
+  }
+  function mirrorCount() {
+    const count = $('participantCount')?.textContent ?? '0', label = $('participantCountLabel')?.textContent ?? '';
+    document.querySelectorAll('[data-count-mirror]').forEach(node => { node.textContent = count; });
+    document.querySelectorAll('[data-count-label-mirror]').forEach(node => { node.textContent = label; });
+  }
+
   function bindUi() {
     $('creatorFilter')?.addEventListener('click', e => { const b = e.target.closest('[data-filter]'); if (!b) return; state.filter = b.dataset.filter; renderCreators(); });
     $('creatorSearch')?.addEventListener('input', e => { state.query = e.target.value.trim(); renderCreators(); });
@@ -377,13 +464,16 @@
     return validateRows(parsed.data);
   }
   async function init() {
-    initEvent(); initOrganizer(); bindUi();
+    showView(parseHash(location.hash).view); // 最初のフレームから正しいビューを出す（データ読込前）
+    initEvent(); initOrganizer(); bindUi(); bindRouter();
     if (demoMode && $('demoNotice')) $('demoNotice').hidden = false;
     try { state.rows = demoMode ? demoRows() : await loadCsv(); state.order = shuffle(state.rows); }
     catch (error) { state.failed = true; console.error('creators.csv の取得・解析に失敗しました:', error); }
     replaceText('participantCount', String(state.rows.length));
     if (demoMode) replaceText('participantCountLabel', '人の仮クリエイターを表示中');
+    mirrorCount();
     renderCreators(); renderWorks(); renderCarousel();
+    applyRoute(); // 初回ロード：?id= / ?room= / #about などを描画後に反映
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once:true });
   else init();
