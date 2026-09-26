@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title">
+  <title id="title">ハロウィン・ノート展 仮OGP</title>
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#150b27"/><stop offset=".55" stop-color="#2d1748"/><stop offset="1" stop-color="#411e3f"/></linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#ffa34b"/><stop offset="1" stop-color="#ff751e"/></linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#night)"/>
+  <g fill="#efdaae" opacity=".8"><circle cx="70" cy="80" r="3"/><circle cx="310" cy="120" r="2"/><circle cx="1015" cy="85" r="2"/><circle cx="895" cy="180" r="3"/><circle cx="1170" cy="320" r="2"/><circle cx="630" cy="60" r="2"/></g>
+  <circle cx="980" cy="160" r="83" fill="#efc891"/><circle cx="954" cy="145" r="78" fill="#2a1643"/>
+  <path d="M1200 47H0v22q35 0 52 6c17 7 21 32 23 47 2 11 14 11 16 0l4-43q33-7 69 1 25 7 30 29c2 12 15 12 17 0l4-29q55-11 113 1c18 4 20 29 23 53 2 12 16 12 18 0l4-54q71-12 132 1c18 4 23 28 25 42 2 11 14 11 16 0l4-44q80-9 160 2c25 4 27 30 31 61 2 12 16 12 18 0l4-60q67-10 135 0c27 4 28 29 31 47 2 10 14 10 16 0l4-38q64-13 130-2 19 3 21 28c1 11 14 11 16 0l4-33q61-10 120 0c21 4 23 24 27 40 2 9 14 9 16 0l4-30Z" fill="#ae64c6"/>
+  <path d="M804 442V287a112 112 0 0 1 224 0v155" fill="#1b102b" stroke="#ddb263" stroke-width="12"/>
+  <path d="M827 444V287a89 89 0 0 1 178 0v157" fill="#2a1a3b"/>
+  <text x="73" y="206" font-size="28" fill="#ffb36a" font-family="Hiragino Kaku Gothic ProN,Noto Sans CJK JP,sans-serif">ONLINE HALLOWEEN EXHIBITION</text>
+  <text x="68" y="303" font-size="79" font-weight="800" fill="#f5f0ff" font-family="Hiragino Kaku Gothic ProN,Noto Sans CJK JP,sans-serif">ハロウィン・</text>
+  <text x="68" y="399" font-size="79" font-weight="800" fill="#f5f0ff" font-family="Hiragino Kaku Gothic ProN,Noto Sans CJK JP,sans-serif">ノート展（仮）</text>
+  <text x="73" y="460" font-size="29" fill="#d5c8e3" font-family="Hiragino Kaku Gothic ProN,Noto Sans CJK JP,sans-serif">作品から、まだ知らないクリエイターへ。</text>
+  <rect x="72" y="515" width="367" height="52" rx="26" fill="url(#orange)"/>
+  <text x="104" y="548" font-size="21" font-weight="700" fill="#220c1a" font-family="Hiragino Kaku Gothic ProN,Noto Sans CJK JP,sans-serif">正式素材へ差し替え予定</text>
+  <text x="925" y="550" font-size="24" fill="#eacdaf" font-family="Hiragino Kaku Gothic ProN,Noto Sans CJK JP,sans-serif">KITAcore</text>
+</svg>

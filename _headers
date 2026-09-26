@@ -1,0 +1,20 @@
+/
+  Cache-Control: no-cache
+
+/creators.csv
+  Cache-Control: no-cache
+
+/assets/site-config.js
+  Cache-Control: no-cache
+
+/assets/app.js
+  Cache-Control: public, max-age=86400
+
+/assets/style.css
+  Cache-Control: public, max-age=86400
+
+/assets/placeholder.png
+  Cache-Control: public, max-age=86400
+
+/assets/ogp.png
+  Cache-Control: public, max-age=86400

@@ -1,0 +1,367 @@
+/* Halloween Gallery: all CSV values enter the DOM as text or vetted URLs. */
+(function () {
+  'use strict';
+  const COLUMNS = ['id','name','note_id','icon_url','catch','entry_type','work_type','article_url','article_title','thumb_url','intro_url','tags','added_at'];
+  const TYPES = new Set(['illust','video','poster']);
+  const DAY = 86400000;
+  const $ = id => document.getElementById(id);
+  const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const config = typeof window !== 'undefined' ? (window.HALLOWEEN_CONFIG || {}) : {};
+  const state = { rows: [], order: [], filter: 'all', query: '', room: 'all', failed: false };
+  const carousel = { items: [], angle: 0, step: 0, radius: 0, frame: 0, last: 0, pauseUntil: 0, hovering: false, dragging: false, startX: 0, startAngle: 0, moved: false };
+
+  function httpsUrl(value, host) {
+    try {
+      const url = new URL(String(value || '').trim());
+      if (url.protocol !== 'https:' || url.username || url.password) return '';
+      if (host && url.hostname !== host) return '';
+      return url.href;
+    } catch { return ''; }
+  }
+  function validDate(value, now = Date.now()) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const date = new Date(value + 'T00:00:00+09:00');
+    if (!Number.isFinite(date.getTime())) return false;
+    const localDay = new Date(date.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    return localDay === value && date.getTime() <= now;
+  }
+  function carouselSlotCount(realCount) { return realCount > 0 && realCount < 6 ? 12 : realCount; }
+  function eventPresentation(phase, start, now) {
+    if (phase === 'open') return { status: '開催中', clock: false, fallback: false, left: 0 };
+    if (phase === 'ended') return { status: '展示終了', clock: false, fallback: false, left: 0 };
+    if (!Number.isFinite(start)) return { status: '開催前', clock: false, fallback: true, fallbackText: '開催日時を準備中です。', left: 0 };
+    const left = Math.max(0, start - now);
+    return left === 0
+      ? { status: 'まもなく開幕', clock: false, fallback: true, fallbackText: 'まもなく開幕。公開の案内をお待ちください。', left: 0 }
+      : { status: '開催前', clock: true, fallback: false, left };
+  }
+  function validateRows(rows, now = Date.now(), logger = console) {
+    const out = [], seen = new Set();
+    rows.forEach((source, index) => {
+      const r = Object.fromEntries(COLUMNS.map(key => [key, String(source?.[key] ?? '').trim()]));
+      const line = Number(source?.__line) || index + 2;
+      let error = '';
+      if (!/^c\d{3,}$/.test(r.id)) error = 'id は c001 形式で必須';
+      else if (seen.has(r.id)) error = 'id が重複';
+      else if (!r.name) error = 'name が空';
+      else if (!/^[A-Za-z0-9_-]+$/.test(r.note_id)) error = 'note_id が不正';
+      else if (!['work','intro'].includes(r.entry_type)) error = 'entry_type が不正';
+      else if (!validDate(r.added_at, now)) error = 'added_at が不正または未来日';
+      else if (r.icon_url && !httpsUrl(r.icon_url)) error = 'icon_url は HTTPS URL が必要';
+      else if (r.intro_url && !httpsUrl(r.intro_url, 'note.com')) error = 'intro_url は HTTPS の note URL が必要';
+      else if (r.entry_type === 'work') {
+        if (!TYPES.has(r.work_type)) error = 'work_type が不正';
+        else if (!httpsUrl(r.article_url, 'note.com')) error = 'article_url は HTTPS の note URL が必要';
+        else if (!r.article_title) error = 'article_title が空';
+        else if (!httpsUrl(r.thumb_url)) error = 'thumb_url は HTTPS URL が必要';
+      }
+      if (error) { logger.warn(`creators.csv ${line}行目: ${error}`); return; }
+      seen.add(r.id);
+      r.profile = `https://note.com/${encodeURIComponent(r.note_id)}`;
+      r.tagList = r.tags.split(';').map(tag => tag.trim()).filter(Boolean);
+      r.isNew = now - new Date(r.added_at + 'T00:00:00+09:00').getTime() < 7 * DAY;
+      out.push(r);
+    });
+    return out;
+  }
+  if (typeof module !== 'undefined' && module.exports) module.exports = { httpsUrl, validDate, validateRows, carouselSlotCount, eventPresentation };
+  if (typeof document === 'undefined') return;
+
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = String(text);
+    return node;
+  }
+  function append(parent, ...children) { children.forEach(child => parent.append(child)); return parent; }
+  function link(label, url, className = 'act') {
+    const a = el('a', className, label);
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    return a;
+  }
+  function setExternal(id, url, text, unavailable = '近日公開') {
+    const node = $(id);
+    if (!node) return;
+    const safe = httpsUrl(url);
+    node.textContent = safe ? text : unavailable;
+    if (safe) { node.href = safe; node.target = '_blank'; node.rel = 'noopener noreferrer'; node.removeAttribute('aria-disabled'); node.classList.remove('disabled', 'link-placeholder'); }
+    else { node.removeAttribute('href'); node.removeAttribute('target'); node.setAttribute('aria-disabled', 'true'); }
+  }
+  function replaceText(id, value) { if ($(id)) $(id).textContent = value; }
+  function dateLabel(value) {
+    if (!value || Number.isNaN(Date.parse(value))) return '';
+    return new Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', year:'numeric', month:'long', day:'numeric', hour:'numeric', minute:'2-digit' }).format(new Date(value));
+  }
+  function eventTime(value) {
+    if (typeof value !== 'string' || !/T\d{2}:\d{2}.*(?:Z|[+-]\d{2}:\d{2})$/.test(value)) return NaN;
+    return Date.parse(value);
+  }
+  function setCountdownVisibility(visible) { if ($('countdown')) $('countdown').hidden = !visible; }
+  function initEvent() {
+    replaceText('siteTitle', config.siteName || 'ハロウィン・ノート展（仮）');
+    replaceText('siteLead', config.shortDescription || '作品から、まだ知らないクリエイターへ。');
+    const start = eventTime(config.eventStartAt), end = eventTime(config.eventEndAt);
+    const phase = ['preview','open','ended'].includes(config.phase) ? config.phase : 'preview';
+    const dates = [dateLabel(config.eventStartAt), dateLabel(config.eventEndAt)].filter(Boolean);
+    replaceText('eventDates', dates.length ? dates.join(' ～ ') + '（日本時間）' : '開催日時は準備中です');
+    replaceText('footerEventDates', dates.length ? '開催期間：' + dates.join(' ～ ') + '（日本時間）' : '開催期間：準備中');
+    const primary = $('heroPrimary'), secondary = $('heroSecondary');
+    if (primary) { primary.href = phase === 'open' ? '#gallery' : phase === 'ended' ? '#gallery' : '#about'; primary.textContent = phase === 'open' ? '作品を見る' : phase === 'ended' ? '展示を見る' : '企画の趣旨を読む'; }
+    if (secondary) { secondary.href = phase === 'ended' ? '#about' : '#join'; secondary.textContent = phase === 'ended' ? '企画の趣旨を読む' : '参加方法を見る'; }
+    function update() {
+      const display = eventPresentation(phase, start, Date.now());
+      replaceText('eventStatus', display.status);
+      setCountdownVisibility(display.clock);
+      if ($('countdownFallback')) $('countdownFallback').hidden = !display.fallback;
+      if (display.fallback) replaceText('countdownFallback', display.fallbackText);
+      if (!display.clock) return;
+      const seconds = Math.floor(display.left / 1000);
+      replaceText('countDays', Math.floor(seconds / 86400));
+      replaceText('countHours', String(Math.floor(seconds / 3600) % 24).padStart(2, '0'));
+      replaceText('countMinutes', String(Math.floor(seconds / 60) % 60).padStart(2, '0'));
+      replaceText('countSeconds', String(seconds % 60).padStart(2, '0'));
+    }
+    update();
+    if (phase === 'preview' && Number.isFinite(start)) setInterval(update, 1000);
+    if (phase === 'open' && Number.isFinite(end) && Date.now() >= end) replaceText('eventStatus', '開催期間を確認中');
+  }
+  function initOrganizer() {
+    const name = config.organizerName?.trim() || '主催者名 準備中';
+    replaceText('organizerName', name);
+    replaceText('footerOrganizerName', name);
+    const profile = $('organizerProfile');
+    if (profile) {
+      const safe = httpsUrl(config.organizerProfileUrl, 'note.com');
+      profile.textContent = safe ? `${name}のnoteプロフィール` : 'プロフィール準備中';
+      if (safe) { profile.href = safe; profile.target = '_blank'; profile.rel = 'noopener noreferrer'; profile.removeAttribute('aria-disabled'); }
+      else { profile.removeAttribute('href'); profile.setAttribute('aria-disabled', 'true'); }
+    }
+    const characterUrl = httpsUrl(config.organizerCharacterUrl);
+    ['organizerCharacter', 'organizerCharacterAbout'].forEach(id => {
+      const character = $(id);
+      if (!character || !characterUrl) return;
+      const image = el('img'); image.src = characterUrl; image.alt = `${name}の案内キャラクター`; image.loading = 'lazy';
+      image.addEventListener('error', () => {
+        character.replaceChildren(el('span', 'image-placeholder', '案内キャラクター準備中'));
+        character.setAttribute('role', 'img'); character.setAttribute('aria-label', '主催者キャラクター画像は準備中です');
+      }, { once:true });
+      character.replaceChildren(image);
+      character.removeAttribute('role'); character.removeAttribute('aria-label');
+    });
+    const statement = $('organizerStatement');
+    if (statement) {
+      statement.replaceChildren();
+      const paragraphs = String(config.organizerStatement || '').trim().split(/\n\s*\n/).filter(Boolean);
+      if (!paragraphs.length) paragraphs.push('企画趣旨は主催者からの原文を準備中です。');
+      paragraphs.forEach(part => append(statement, el('p', '', part)));
+    }
+    setExternal('announcementLink', config.announcementUrl, '告知記事を読む');
+    setExternal('launchArticleLink', config.launchArticleUrl, '開始記事を読む');
+    setExternal('magazineLink', config.magazineUrl, '共同運営マガジンを見る');
+    const tool = httpsUrl(config.posterToolUrl);
+    replaceText('posterToolStatus', tool && config.phase === 'open' ? '公開中' : '近日公開');
+    setExternal('posterToolLink', config.phase === 'open' ? tool : '', 'ポスターツールを開く');
+  }
+  function badge() { return el('span', 'badge-new', 'NEW'); }
+  function imageOrPlaceholder(url, alt, kind, width, height) {
+    const box = el('span', kind);
+    if (kind === 'work-image') { box.style.display = 'block'; box.style.width = '100%'; box.style.height = '100%'; }
+    const img = el('img');
+    img.src = url; img.alt = alt; img.loading = 'lazy'; img.width = width; img.height = height;
+    const fallback = () => {
+      if (kind === 'avatar') box.replaceChildren(el('span', 'image-placeholder', '🎃'));
+      else { img.src = 'assets/placeholder.png'; img.alt = alt; }
+    };
+    img.addEventListener('error', fallback, { once: true });
+    append(box, img);
+    return box;
+  }
+  function avatar(r) {
+    return r.icon_url ? imageOrPlaceholder(r.icon_url, '', 'avatar', 64, 64) : el('span', 'avatar image-placeholder', '🎃');
+  }
+  function creatorCard(r) {
+    const card = el('article', 'card'); card.id = `creator-${r.id}`; card.tabIndex = -1;
+    if (r.isNew) append(card, badge());
+    const top = el('div', 'top'), heading = el('div');
+    append(heading, el('h3', '', r.name), el('p', 'catch', r.catch));
+    append(top, avatar(r), heading); append(card, top);
+    if (r.tagList.length) {
+      const tags = el('div', 'tags');
+      r.tagList.slice(0,3).forEach(tag => { const button = el('button', 'tag', '#' + tag); button.type = 'button'; button.dataset.tag = tag; append(tags, button); });
+      if (r.tagList.length > 3) append(tags, el('span', 'tag more', '+' + (r.tagList.length - 3)));
+      append(card, tags);
+    }
+    const actions = el('div', 'actions'); append(actions, link('note プロフィール', r.profile));
+    if (r.intro_url) append(actions, link('自己紹介を読む', r.intro_url));
+    if (r.entry_type === 'work') { const button = el('button', 'act hot', '作品を見る'); button.type = 'button'; button.dataset.workId = r.id; append(actions, button); }
+    append(card, actions); return card;
+  }
+  function emptyCreator() { return append(el('div', 'card dummy'), el('span', '', '🕯️'), el('p', '', 'あなたの自己紹介がここに')); }
+  function workCard(r) {
+    const card = el('article', 'frame'); card.id = `work-${r.id}`; card.tabIndex = -1;
+    const inner = el('div', 'inner'), thumb = link('', r.article_url, 'thumb'); thumb.setAttribute('aria-label', `${r.article_title}をnoteで読む`);
+    append(thumb, imageOrPlaceholder(r.thumb_url, `${r.name}『${r.article_title}』`, 'work-image', 382, 200));
+    if (r.work_type === 'video') append(thumb, el('span', 'play', '▶'));
+    const cap = el('div', 'cap'); append(cap, el('h3', '', r.article_title));
+    const author = el('button', 'by', r.name); author.type = 'button'; author.dataset.creatorId = r.id; append(cap, author);
+    if (r.isNew) append(cap, badge());
+    append(cap, append(el('div', 'actions'), link('記事を読む', r.article_url)));
+    append(inner, thumb, cap); append(card, inner); return card;
+  }
+  function emptyWork() { return append(el('div', 'frame dummy'), append(el('div', 'inner'), append(el('div', 'thumb'), el('span', '', '🖼️ あなたの作品がここに')))); }
+  function setMessage(node, text) { if (node) node.replaceChildren(el('p', 'empty-note', text)); }
+  function renderCreators() {
+    const grid = $('creatorGrid'); if (!grid) return;
+    if (state.failed) { setMessage(grid, '展示を準備中です。しばらくしてからもう一度ご覧ください。'); return; }
+    const q = state.query.toLocaleLowerCase('ja');
+    const list = state.order.filter(r => (state.filter === 'all' || r.entry_type === state.filter) && (!q || [r.name,r.catch,r.tags,r.article_title].join(' ').toLocaleLowerCase('ja').includes(q)));
+    grid.replaceChildren(...list.map(creatorCard));
+    if (!list.length && (q || state.filter !== 'all')) setMessage(grid, '該当するクリエイターはいません。検索語や絞り込みを変えてください。');
+    else if (state.filter === 'all' && !q) for (let i = list.length; i < 6; i++) append(grid, emptyCreator());
+    const counts = { all: state.rows.length, work: state.rows.filter(r => r.entry_type === 'work').length };
+    counts.intro = counts.all - counts.work;
+    $('creatorFilter')?.querySelectorAll('[data-filter]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.filter === state.filter));
+      const count = button.querySelector('[data-count]') || button.querySelector('span');
+      if (count) count.textContent = String(counts[button.dataset.filter] ?? 0);
+    });
+  }
+  function renderWorks() {
+    const grid = $('workGrid'); if (!grid) return;
+    grid.classList.add('works');
+    if (state.failed) { setMessage(grid, '展示を準備中です。しばらくしてからもう一度ご覧ください。'); return; }
+    const works = state.rows.filter(r => r.entry_type === 'work');
+    $('galleryRooms')?.querySelectorAll('[data-room]').forEach(button => {
+      const count = button.dataset.room === 'all' ? works.length : works.filter(r => r.work_type === button.dataset.room).length;
+      const marker = button.querySelector('[data-count]') || button.querySelector('span');
+      if (marker) marker.textContent = String(count);
+      button.disabled = button.dataset.room !== 'all' && !works.some(r => r.work_type === button.dataset.room);
+      if (button.disabled && state.room === button.dataset.room) state.room = 'all';
+      button.setAttribute('aria-pressed', String(button.dataset.room === state.room));
+    });
+    const list = works.filter(r => state.room === 'all' || r.work_type === state.room);
+    grid.replaceChildren(...list.map(workCard));
+    if (state.room === 'all') for (let i = list.length; i < 6; i++) append(grid, emptyWork());
+    else if (!list.length) setMessage(grid, 'この展示室にはまだ作品がありません。');
+  }
+  function shuffle(items) {
+    const copy = items.slice();
+    for (let i = copy.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [copy[i], copy[j]] = [copy[j], copy[i]]; }
+    return copy;
+  }
+  function renderCarousel() {
+    const ring = $('carouselRing'), outer = $('carousel');
+    if (!ring || !outer) return;
+    ring.classList.add('ring');
+    if (carousel.frame) cancelAnimationFrame(carousel.frame);
+    carousel.frame = 0; carousel.last = 0; carousel.angle = 0;
+    if (state.failed || !state.rows.length) {
+      ring.replaceChildren(el('p', 'empty-note', state.failed ? '展示を準備中です。' : '最初の参加クリエイターをお待ちしています。'));
+      outer.classList.add('is-empty');
+      if ($('carouselPrev')) $('carouselPrev').disabled = true;
+      if ($('carouselNext')) $('carouselNext').disabled = true;
+      return;
+    }
+    outer.classList.remove('is-empty');
+    if ($('carouselPrev')) $('carouselPrev').disabled = false;
+    if ($('carouselNext')) $('carouselNext').disabled = false;
+    const real = shuffle(state.rows).slice(0,12);
+    const slots = carouselSlotCount(real.length);
+    carousel.step = 360 / slots;
+    carousel.radius = Math.round((innerWidth >= 768 ? 182 : 150) / (2 * Math.tan(Math.PI / slots)));
+    const items = real.concat(Array(slots - real.length).fill(null));
+    ring.replaceChildren(...items.map((r, i) => {
+      const item = el('div', 'cc' + (r ? '' : ' dummy'));
+      item.style.transform = `rotateY(${i * carousel.step}deg) translateZ(${carousel.radius}px)`;
+      if (r) {
+        const button = el('button', 'face front', ''); button.type = 'button'; button.dataset.creatorId = r.id; button.setAttribute('aria-label', `${r.name}のカードへ移動`);
+        append(button, avatar(r), el('span', 'name', r.name), el('span', 'catch', r.catch));
+        append(item, button, el('div', 'face back', '🎃'));
+      } else append(item, append(el('div', 'face front'), el('span', 'catch', 'あなたの席が空いています')), el('div', 'face back', '🎃'));
+      return item;
+    }));
+    carousel.items = [...ring.children];
+    ring.style.setProperty('--cw', innerWidth >= 768 ? '160px' : '128px');
+    const stage = ring.closest('.stage'); if (stage) stage.style.height = `${270 + Math.min(80, carousel.radius / 8)}px`;
+    paintCarousel();
+    if (!reduced) carousel.frame = requestAnimationFrame(tick);
+  }
+  function paintCarousel() {
+    const ring = $('carouselRing'); if (!ring || !carousel.items.length) return;
+    ring.style.transform = `translateZ(${-carousel.radius}px) rotateY(${-carousel.angle}deg)`;
+    carousel.items.forEach((item,i) => {
+      const angle = ((i * carousel.step - carousel.angle) % 360 + 540) % 360 - 180;
+      const front = (Math.cos(angle * Math.PI / 180) + 1) / 2;
+      item.style.zIndex = String(Math.round(front * 100));
+      item.style.opacity = String(0.45 + 0.55 * front);
+    });
+  }
+  function tick(now) {
+    const elapsed = carousel.last ? Math.min(64, now - carousel.last) : 16;
+    carousel.last = now;
+    if (!carousel.dragging && !carousel.hovering && now > carousel.pauseUntil) carousel.angle += elapsed * (360 / 36000);
+    paintCarousel(); carousel.frame = requestAnimationFrame(tick);
+  }
+  function pauseCarousel() { carousel.pauseUntil = performance.now() + 3000; }
+  function turnCarousel(direction) { if (!carousel.step) return; carousel.angle = Math.round(carousel.angle / carousel.step + direction) * carousel.step; paintCarousel(); pauseCarousel(); }
+  function focusCard(node) {
+    if (!node) return;
+    node.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+    node.focus({ preventScroll: true }); node.classList.add('flash');
+    setTimeout(() => node.classList.remove('flash'), 1800);
+  }
+  function gotoCreator(id) {
+    state.filter = 'all'; state.query = '';
+    if ($('creatorSearch')) $('creatorSearch').value = '';
+    renderCreators(); focusCard($(`creator-${id}`));
+  }
+  function gotoWork(id) { state.room = 'all'; renderWorks(); focusCard($(`work-${id}`)); }
+  function bindUi() {
+    $('creatorFilter')?.addEventListener('click', e => { const b = e.target.closest('[data-filter]'); if (!b) return; state.filter = b.dataset.filter; renderCreators(); });
+    $('creatorSearch')?.addEventListener('input', e => { state.query = e.target.value.trim(); renderCreators(); });
+    $('creatorShuffle')?.addEventListener('click', () => { state.order = shuffle(state.order); renderCreators(); renderCarousel(); });
+    $('galleryRooms')?.addEventListener('click', e => { const b = e.target.closest('[data-room]'); if (!b || b.disabled) return; state.room = b.dataset.room; renderWorks(); });
+    document.addEventListener('click', e => {
+      const tag = e.target.closest('[data-tag]');
+      if (tag) { state.query = tag.dataset.tag; if ($('creatorSearch')) $('creatorSearch').value = state.query; renderCreators(); return; }
+      const work = e.target.closest('[data-work-id]'); if (work) { gotoWork(work.dataset.workId); return; }
+      const creator = e.target.closest('[data-creator-id]'); if (creator) gotoCreator(creator.dataset.creatorId);
+    });
+    $('carouselPrev')?.addEventListener('click', () => turnCarousel(-1));
+    $('carouselNext')?.addEventListener('click', () => turnCarousel(1));
+    const stage = $('carouselRing')?.closest('.stage') || $('carousel');
+    if (stage) {
+      stage.addEventListener('mouseenter', () => { carousel.hovering = true; });
+      stage.addEventListener('mouseleave', () => { carousel.hovering = false; pauseCarousel(); });
+      stage.addEventListener('pointerdown', e => { if (e.target.closest('button') && e.pointerType === 'mouse') return; carousel.dragging = true; carousel.moved = false; carousel.startX = e.clientX; carousel.startAngle = carousel.angle; stage.setPointerCapture?.(e.pointerId); });
+      stage.addEventListener('pointermove', e => { if (!carousel.dragging) return; const delta = e.clientX - carousel.startX; if (Math.abs(delta) > 6) carousel.moved = true; carousel.angle = carousel.startAngle - delta * 0.35; paintCarousel(); });
+      stage.addEventListener('pointerup', () => { carousel.dragging = false; pauseCarousel(); });
+      stage.addEventListener('pointercancel', () => { carousel.dragging = false; pauseCarousel(); });
+      stage.addEventListener('click', e => { if (carousel.moved) { e.stopPropagation(); carousel.moved = false; } }, true);
+    }
+    let resizeTimer;
+    addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(renderCarousel, 200); });
+  }
+  async function loadCsv() {
+    if (!window.Papa?.parse) throw new Error('Papa Parse を読み込めませんでした');
+    const response = await fetch(`creators.csv?v=${Date.now()}`, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`CSV HTTP ${response.status}`);
+    const csv = await response.text();
+    const parsed = window.Papa.parse(csv.replace(/^\uFEFF/, ''), { header: true, skipEmptyLines: 'greedy' });
+    if (parsed.errors.length) throw new Error(`CSV構文エラー: ${parsed.errors[0].message}`);
+    const fields = parsed.meta.fields || [];
+    if (COLUMNS.some(column => !fields.includes(column))) throw new Error('CSVの必須ヘッダーがありません');
+    return validateRows(parsed.data);
+  }
+  async function init() {
+    initEvent(); initOrganizer(); bindUi();
+    try { state.rows = await loadCsv(); state.order = shuffle(state.rows); }
+    catch (error) { state.failed = true; console.error('creators.csv の取得・解析に失敗しました:', error); }
+    replaceText('participantCount', String(state.rows.length));
+    renderCreators(); renderWorks(); renderCarousel();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once:true });
+  else init();
+})();

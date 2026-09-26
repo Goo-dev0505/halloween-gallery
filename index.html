@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f0a1a">
+  <meta name="description" content="ハロウィン・ノート展の開催情報と参加案内です。企画詳細は準備中です。">
+  <meta property="og:title" content="ハロウィン・ノート展（仮）">
+  <meta property="og:description" content="ハロウィン・ノート展の開催情報と参加案内です。企画詳細は準備中です。">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- 公開時に og:image を追加し、assets/ogp.png の絶対URLへ置換（公開ドメイン未確定） -->
+  <title>ハロウィン・ノート展（仮）</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script defer src="assets/site-config.js"></script>
+  <script defer src="assets/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">本文へ移動</a>
+  <header class="site-header">
+    <nav class="nav wrap" aria-label="メインナビゲーション">
+      <a class="brand" href="#top" aria-label="ハロウィン・ノート展 トップ">ハロウィン・ノート展</a>
+      <ul class="nav-list">
+        <li><a href="#about">企画について</a></li>
+        <li><a href="#creators">クリエイター</a></li>
+        <li><a href="#gallery">美術館</a></li>
+        <li><a href="#tool">ポスターツール</a></li>
+        <li><a href="#join">参加方法</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero block" id="top" aria-labelledby="siteTitle">
+      <div class="wrap hero-layout">
+        <div class="hero-copy">
+          <p class="eyebrow">ONLINE EXHIBITION</p>
+          <h1 id="siteTitle">ハロウィン・ノート展（仮）</h1>
+          <p id="siteLead">作品から、まだ知らないクリエイターへ。</p>
+          <p id="eventStatus" class="status" role="status">開催情報を準備中です</p>
+          <p id="eventDates">開催期間は決まり次第お知らせします。</p>
+          <div id="countdown" class="countdown" aria-label="開幕までのカウントダウン" aria-live="off" hidden>
+            <span>開幕まで</span>
+            <span><strong id="countDays">--</strong>日</span>
+            <span><strong id="countHours">--</strong>時間</span>
+            <span><strong id="countMinutes">--</strong>分</span>
+            <span><strong id="countSeconds">--</strong>秒</span>
+          </div>
+          <p id="countdownFallback" class="status-note">開催日時を準備中です。</p>
+          <p class="participant-summary"><span id="participantCount" aria-live="polite">0</span> 人が参加しています</p>
+          <div class="hero-actions">
+            <a class="btn" id="heroPrimary" href="#about">企画の趣旨を読む</a>
+            <a class="btn secondary" id="heroSecondary" href="#join">参加方法を見る</a>
+            <a class="btn text-link" href="#gallery">作品を見る</a>
+          </div>
+          <p class="credit-line">特設サイト制作・ポスターツール提供：KITAcore</p>
+        </div>
+        <aside class="organizer-card panel" aria-labelledby="organizerName">
+          <div class="moon" aria-hidden="true">☾</div>
+          <div id="organizerCharacter" class="organizer-character" aria-label="主催者キャラクター画像は準備中です">
+            <span aria-hidden="true">🎃</span>
+            <span class="sr-only">主催者キャラクター画像は準備中です</span>
+          </div>
+          <p class="eyebrow">案内役</p>
+          <h2 id="organizerName">主催者名 準備中</h2>
+          <p><a id="organizerProfile" aria-disabled="true">主催者プロフィールは準備中です。</a></p>
+          <p class="statement-placeholder">企画趣旨の原文は準備中です。</p>
+          <span class="crow" aria-hidden="true">✦</span>
+        </aside>
+      </div>
+      <span class="magic-drip" aria-hidden="true"></span>
+    </section>
+
+    <section class="block about reveal" id="about" aria-labelledby="aboutTitle">
+      <div class="wrap narrow">
+        <p class="eyebrow">ABOUT</p>
+        <h2 id="aboutTitle">この企画について</h2>
+        <p class="section-intro">主催者からの企画趣旨を準備中です。</p>
+        <div id="organizerCharacterAbout" class="organizer-character organizer-character-about" role="img" aria-label="主催者キャラクター画像は準備中です">
+          <span aria-hidden="true">🎃</span>
+          <span class="sr-only">主催者キャラクター画像は準備中です。</span>
+        </div>
+        <div class="panel prose" id="organizerStatement" aria-live="polite">
+          <p>主催者からの企画趣旨の原文を受領後、全文を掲載します。</p>
+          <p>開催内容、主催者情報、告知記事は確認が整い次第お知らせします。</p>
+        </div>
+        <div class="actions">
+          <a class="act" href="#join">参加方法を見る</a>
+          <a id="announcementLink" class="link-placeholder" aria-disabled="true">告知記事：準備中</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="block creators-section reveal" id="creators" aria-labelledby="creatorsTitle">
+      <div class="wrap">
+        <p class="eyebrow">CREATORS</p>
+        <h2 id="creatorsTitle">参加クリエイター</h2>
+        <p class="section-intro">参加者の確認後、こちらに紹介を掲載します。</p>
+        <div class="carousel panel" id="carousel" aria-label="クリエイターのメリーゴーランド">
+          <div class="carousel-heading">
+            <h3>クリエイターをめぐる</h3>
+            <p>参加者の掲載準備中です。</p>
+          </div>
+          <div class="stage" id="carouselStage" aria-label="クリエイター表示エリア">
+            <div class="carousel-ring" id="carouselRing" aria-live="polite">
+              <p class="empty-note">展示の準備中です。</p>
+            </div>
+          </div>
+          <div class="carousel-controls" role="group" aria-label="メリーゴーランド操作">
+            <button class="btn secondary" id="carouselPrev" type="button" aria-label="前のクリエイター">前へ</button>
+            <button class="btn secondary" id="carouselNext" type="button" aria-label="次のクリエイター">次へ</button>
+          </div>
+        </div>
+
+        <div class="creator-tools">
+          <div class="seg" id="creatorFilter" role="group" aria-label="参加形態で絞り込む">
+            <button type="button" data-filter="all" aria-pressed="true">すべて <span>0</span></button>
+            <button type="button" data-filter="work" aria-pressed="false">作品あり <span>0</span></button>
+            <button type="button" data-filter="intro" aria-pressed="false">自己紹介 <span>0</span></button>
+          </div>
+          <label for="creatorSearch">クリエイターを検索</label>
+          <input id="creatorSearch" type="search" autocomplete="off" placeholder="名前・紹介・タグで検索">
+          <button class="btn secondary" id="creatorShuffle" type="button">順番をシャッフル</button>
+        </div>
+        <div class="grid" id="creatorGrid" aria-live="polite" aria-busy="false">
+          <p class="empty-note">クリエイターを準備中です。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block hall reveal" id="gallery" aria-labelledby="galleryTitle">
+      <div class="wrap">
+        <p class="eyebrow">GALLERY</p>
+        <h2 id="galleryTitle">夜の美術館</h2>
+        <p class="section-intro">作品の掲載準備中です。</p>
+        <div class="seg room-tabs" id="galleryRooms" role="group" aria-label="作品の部屋を選ぶ">
+          <button type="button" data-room="all" aria-pressed="true">すべて <span>0</span></button>
+          <button type="button" data-room="illust" aria-pressed="false" disabled>イラスト館 <span>0</span></button>
+          <button type="button" data-room="video" aria-pressed="false" disabled>動画館 <span>0</span></button>
+          <button type="button" data-room="poster" aria-pressed="false" disabled>ポスター館 <span>0</span></button>
+        </div>
+        <div class="grid work-grid" id="workGrid" aria-live="polite" aria-busy="false">
+          <p class="empty-note">作品を準備中です。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block tool-section reveal" id="tool" aria-labelledby="toolTitle">
+      <div class="wrap">
+        <p class="eyebrow">POSTER TOOL</p>
+        <h2 id="toolTitle">ポスターツール</h2>
+        <div class="panel tool-panel">
+          <div class="poster-placeholder" aria-hidden="true"><span>✦</span></div>
+          <div>
+            <p>ポスターツールの紹介と利用方法は準備中です。</p>
+            <p id="posterToolStatus" role="status">公開準備中</p>
+            <a id="posterToolLink" class="btn disabled" aria-disabled="true">ツール：準備中</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block join-section reveal" id="join" aria-labelledby="joinTitle">
+      <div class="wrap narrow">
+        <p class="eyebrow">JOIN</p>
+        <h2 id="joinTitle">参加方法</h2>
+        <p class="section-intro">正式な参加ルールを準備中です。確定後に手順を掲載します。</p>
+        <ol class="steps" id="joinSteps">
+          <li><div><strong>参加ルールを確認する</strong><span>募集条件と投稿方法は準備中です。</span></div></li>
+          <li><div><strong>作品または自己紹介を投稿する</strong><span>投稿先・形式は決まり次第お知らせします。</span></div></li>
+          <li><div><strong>参加申請をする</strong><span>申請方法と掲載までの流れは準備中です。</span></div></li>
+        </ol>
+        <div class="links" aria-label="関連リンク">
+          <a id="launchArticleLink" class="link-placeholder" aria-disabled="true">開始記事：準備中</a>
+          <a id="magazineLink" class="link-placeholder" aria-disabled="true">共同運営マガジン：準備中</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>企画・主催：<span id="footerOrganizerName">主催者名 準備中</span></p>
+      <p>特設サイト制作・ポスターツール提供：KITAcore</p>
+      <p id="footerEventDates">開催期間：準備中</p>
+    </div>
+  </footer>
+</body>
+</html>
