@@ -31,6 +31,8 @@
     </nav>
   </header>
 
+  <div id="demoNotice" class="demo-notice" role="note" hidden>サンプル展示中：下のクリエイターと作品は、デザイン確認用の架空データです。日時のカウントダウンもデモ表示です。</div>
+
   <main id="main">
     <section class="hero block" id="top" aria-labelledby="siteTitle">
       <div class="wrap hero-layout">
@@ -48,7 +50,7 @@
             <span><strong id="countSeconds">--</strong>秒</span>
           </div>
           <p id="countdownFallback" class="status-note">開催日時を準備中です。</p>
-          <p class="participant-summary"><span id="participantCount" aria-live="polite">0</span> 人が参加しています</p>
+          <p class="participant-summary"><span id="participantCount" aria-live="polite">0</span> <span id="participantCountLabel">人が参加しています</span></p>
           <div class="hero-actions">
             <a class="btn" id="heroPrimary" href="#about">企画の趣旨を読む</a>
             <a class="btn secondary" id="heroSecondary" href="#join">参加方法を見る</a>
@@ -70,6 +72,7 @@
         </aside>
       </div>
       <span class="magic-drip" aria-hidden="true"></span>
+      <span class="flying-crow" aria-hidden="true">🐦‍⬛</span>
     </section>
 
     <section class="block about reveal" id="about" aria-labelledby="aboutTitle">
@@ -113,6 +116,7 @@
           </div>
         </div>
 
+        <h3 class="list-title">クリエイター一覧</h3>
         <div class="creator-tools">
           <div class="seg" id="creatorFilter" role="group" aria-label="参加形態で絞り込む">
             <button type="button" data-filter="all" aria-pressed="true">すべて <span>0</span></button>
@@ -134,6 +138,7 @@
         <p class="eyebrow">GALLERY</p>
         <h2 id="galleryTitle">夜の美術館</h2>
         <p class="section-intro">作品の掲載準備中です。</p>
+        <h3 class="list-title">作品一覧</h3>
         <div class="seg room-tabs" id="galleryRooms" role="group" aria-label="作品の部屋を選ぶ">
           <button type="button" data-room="all" aria-pressed="true">すべて <span>0</span></button>
           <button type="button" data-room="illust" aria-pressed="false" disabled>イラスト館 <span>0</span></button>

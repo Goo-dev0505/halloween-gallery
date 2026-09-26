@@ -7,6 +7,7 @@
   const $ = id => document.getElementById(id);
   const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const config = typeof window !== 'undefined' ? (window.HALLOWEEN_CONFIG || {}) : {};
+  const demoMode = config.demoMode === true;
   const state = { rows: [], order: [], filter: 'all', query: '', room: 'all', failed: false };
   const carousel = { items: [], angle: 0, step: 0, radius: 0, frame: 0, last: 0, pauseUntil: 0, hovering: false, dragging: false, startX: 0, startAngle: 0, moved: false };
 
@@ -34,6 +35,16 @@
     return left === 0
       ? { status: 'まもなく開幕', clock: false, fallback: true, fallbackText: 'まもなく開幕。公開の案内をお待ちください。', left: 0 }
       : { status: '開催前', clock: true, fallback: false, left };
+  }
+  function demoRows() {
+    return [
+      { id:'c901', name:'仮の作家・クロネコ', note_id:'', icon_url:'assets/demo/cat-gallery.jpg', catch:'夜の美術館を案内する黒猫を描きました。', entry_type:'work', work_type:'illust', article_url:'', article_title:'魔女帽子の黒猫と夜の美術館', thumb_url:'assets/demo/cat-gallery.jpg', intro_url:'', tags:'猫;イラスト;夜の美術館', tagList:['猫','イラスト','夜の美術館'], added_at:'', profile:'', isNew:false, demo:true },
+      { id:'c902', name:'仮の作家・月灯', note_id:'', icon_url:'assets/demo/pumpkin-lantern.jpg', catch:'やさしい光のハロウィンを作ります。', entry_type:'work', work_type:'poster', article_url:'', article_title:'月夜に浮かぶかぼちゃ灯籠', thumb_url:'assets/demo/pumpkin-lantern.jpg', intro_url:'', tags:'灯り;ポスター;秋', tagList:['灯り','ポスター','秋'], added_at:'', profile:'', isNew:false, demo:true },
+      { id:'c903', name:'仮の作家・星の便り', note_id:'', icon_url:'', catch:'展示会を楽しみにしている自己紹介枠の見本です。', entry_type:'intro', work_type:'', article_url:'', article_title:'', thumb_url:'', intro_url:'', tags:'自己紹介;ことば', tagList:['自己紹介','ことば'], added_at:'', profile:'', isNew:false, demo:true },
+      { id:'c904', name:'仮の作家・おばけ郵便', note_id:'', icon_url:'assets/demo/ghost-mail.jpg', catch:'夜に届く小さな手紙を描いています。', entry_type:'work', work_type:'illust', article_url:'', article_title:'おばけの郵便屋さん', thumb_url:'assets/demo/ghost-mail.jpg', intro_url:'', tags:'おばけ;手紙;イラスト', tagList:['おばけ','手紙','イラスト'], added_at:'', profile:'', isNew:false, demo:true },
+      { id:'c905', name:'仮の作家・コウモリ行進曲', note_id:'', icon_url:'assets/demo/bat-parade.jpg', catch:'街じゅうを巡る仮装パレードの映像見本。', entry_type:'work', work_type:'video', article_url:'', article_title:'星とコウモリの夜の行進', thumb_url:'assets/demo/bat-parade.jpg', intro_url:'', tags:'動画;パレード;星', tagList:['動画','パレード','星'], added_at:'', profile:'', isNew:false, demo:true },
+      { id:'c906', name:'仮の作家・魔法の栞', note_id:'', icon_url:'', catch:'ことばでハロウィンに参加する自己紹介枠です。', entry_type:'intro', work_type:'', article_url:'', article_title:'', thumb_url:'', intro_url:'', tags:'自己紹介;物語', tagList:['自己紹介','物語'], added_at:'', profile:'', isNew:false, demo:true }
+    ];
   }
   function validateRows(rows, now = Date.now(), logger = console) {
     const out = [], seen = new Set();
@@ -64,7 +75,7 @@
     });
     return out;
   }
-  if (typeof module !== 'undefined' && module.exports) module.exports = { httpsUrl, validDate, validateRows, carouselSlotCount, eventPresentation };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { httpsUrl, validDate, validateRows, carouselSlotCount, eventPresentation, demoRows };
   if (typeof document === 'undefined') return;
 
   function el(tag, className, text) {
@@ -102,17 +113,24 @@
   function initEvent() {
     replaceText('siteTitle', config.siteName || 'ハロウィン・ノート展（仮）');
     replaceText('siteLead', config.shortDescription || '作品から、まだ知らないクリエイターへ。');
-    const start = eventTime(config.eventStartAt), end = eventTime(config.eventEndAt);
+    const configuredStart = eventTime(config.eventStartAt);
+    const demoCountdown = demoMode && !Number.isFinite(configuredStart);
+    const start = demoCountdown ? Date.now() + 7 * DAY : configuredStart;
+    const end = eventTime(config.eventEndAt);
     const phase = ['preview','open','ended'].includes(config.phase) ? config.phase : 'preview';
     const dates = [dateLabel(config.eventStartAt), dateLabel(config.eventEndAt)].filter(Boolean);
-    replaceText('eventDates', dates.length ? dates.join(' ～ ') + '（日本時間）' : '開催日時は準備中です');
+    replaceText('eventDates', demoCountdown ? '正式な開催日時は準備中です。' : dates.length ? dates.join(' ～ ') + '（日本時間）' : '開催日時は準備中です');
+    if (demoCountdown) {
+      const label = $('countdown')?.querySelector('span');
+      if (label) label.textContent = 'デモのカウントダウン';
+    }
     replaceText('footerEventDates', dates.length ? '開催期間：' + dates.join(' ～ ') + '（日本時間）' : '開催期間：準備中');
     const primary = $('heroPrimary'), secondary = $('heroSecondary');
     if (primary) { primary.href = phase === 'open' ? '#gallery' : phase === 'ended' ? '#gallery' : '#about'; primary.textContent = phase === 'open' ? '作品を見る' : phase === 'ended' ? '展示を見る' : '企画の趣旨を読む'; }
     if (secondary) { secondary.href = phase === 'ended' ? '#about' : '#join'; secondary.textContent = phase === 'ended' ? '企画の趣旨を読む' : '参加方法を見る'; }
     function update() {
       const display = eventPresentation(phase, start, Date.now());
-      replaceText('eventStatus', display.status);
+      replaceText('eventStatus', demoCountdown ? `${display.status}（デモ表示）` : display.status);
       setCountdownVisibility(display.clock);
       if ($('countdownFallback')) $('countdownFallback').hidden = !display.fallback;
       if (display.fallback) replaceText('countdownFallback', display.fallbackText);
@@ -193,21 +211,24 @@
       if (r.tagList.length > 3) append(tags, el('span', 'tag more', '+' + (r.tagList.length - 3)));
       append(card, tags);
     }
-    const actions = el('div', 'actions'); append(actions, link('note プロフィール', r.profile));
-    if (r.intro_url) append(actions, link('自己紹介を読む', r.intro_url));
+    const actions = el('div', 'actions');
+    if (r.demo) append(actions, el('span', 'act demo-pill', '架空の展示例'));
+    else append(actions, link('note プロフィール', r.profile));
+    if (!r.demo && r.intro_url) append(actions, link('自己紹介を読む', r.intro_url));
     if (r.entry_type === 'work') { const button = el('button', 'act hot', '作品を見る'); button.type = 'button'; button.dataset.workId = r.id; append(actions, button); }
     append(card, actions); return card;
   }
   function emptyCreator() { return append(el('div', 'card dummy'), el('span', '', '🕯️'), el('p', '', 'あなたの自己紹介がここに')); }
   function workCard(r) {
     const card = el('article', 'frame'); card.id = `work-${r.id}`; card.tabIndex = -1;
-    const inner = el('div', 'inner'), thumb = link('', r.article_url, 'thumb'); thumb.setAttribute('aria-label', `${r.article_title}をnoteで読む`);
+    const inner = el('div', 'inner'), thumb = r.demo ? el('div', 'thumb') : link('', r.article_url, 'thumb');
+    if (!r.demo) thumb.setAttribute('aria-label', `${r.article_title}をnoteで読む`);
     append(thumb, imageOrPlaceholder(r.thumb_url, `${r.name}『${r.article_title}』`, 'work-image', 382, 200));
-    if (r.work_type === 'video') append(thumb, el('span', 'play', '▶'));
+    if (r.work_type === 'video' && !r.demo) append(thumb, el('span', 'play', '▶'));
     const cap = el('div', 'cap'); append(cap, el('h3', '', r.article_title));
     const author = el('button', 'by', r.name); author.type = 'button'; author.dataset.creatorId = r.id; append(cap, author);
     if (r.isNew) append(cap, badge());
-    append(cap, append(el('div', 'actions'), link('記事を読む', r.article_url)));
+    append(cap, append(el('div', 'actions'), r.demo ? el('span', 'act demo-pill', '架空の作品例') : link('記事を読む', r.article_url)));
     append(inner, thumb, cap); append(card, inner); return card;
   }
   function emptyWork() { return append(el('div', 'frame dummy'), append(el('div', 'inner'), append(el('div', 'thumb'), el('span', '', '🖼️ あなたの作品がここに')))); }
@@ -357,9 +378,11 @@
   }
   async function init() {
     initEvent(); initOrganizer(); bindUi();
-    try { state.rows = await loadCsv(); state.order = shuffle(state.rows); }
+    if (demoMode && $('demoNotice')) $('demoNotice').hidden = false;
+    try { state.rows = demoMode ? demoRows() : await loadCsv(); state.order = shuffle(state.rows); }
     catch (error) { state.failed = true; console.error('creators.csv の取得・解析に失敗しました:', error); }
     replaceText('participantCount', String(state.rows.length));
+    if (demoMode) replaceText('participantCountLabel', '人の仮クリエイターを表示中');
     renderCreators(); renderWorks(); renderCarousel();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once:true });

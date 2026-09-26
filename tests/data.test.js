@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { httpsUrl, validDate, validateRows, carouselSlotCount, eventPresentation } = require('../assets/app.js');
+const { httpsUrl, validDate, validateRows, carouselSlotCount, eventPresentation, demoRows } = require('../assets/app.js');
 
 const now = Date.parse('2026-09-26T12:00:00+09:00');
 const creator = {
@@ -69,4 +69,16 @@ test('実参加者1〜5人は12枠、6人以上は実人数分を使う', () => 
   for (let count = 1; count <= 5; count++) assert.equal(carouselSlotCount(count), 12);
   assert.equal(carouselSlotCount(6), 6);
   assert.equal(carouselSlotCount(12), 12);
+});
+
+test('仮展示の作品画像はローカルにあり、架空の外部リンクを作らない', () => {
+  const rows = demoRows();
+  assert.equal(rows.length, 6);
+  assert.equal(rows.filter(row => row.entry_type === 'work').length, 4);
+  for (const row of rows) {
+    assert.equal(row.demo, true);
+    assert.equal(row.profile, '');
+    assert.equal(row.article_url, '');
+    if (row.thumb_url) assert.equal(fs.existsSync(path.join(__dirname, '..', row.thumb_url)), true);
+  }
 });

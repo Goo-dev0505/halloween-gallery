@@ -4,6 +4,8 @@ note クリエイター参加型のハロウィン展示サイト。作品の本
 
 **状態:** ローカル制作版。企画名、主催者素材、開催日時、記事・マガジン・ツール URL は未確定です。公開前に [SPEC.md](./SPEC.md) の未決事項を確認してください。
 
+現在は `assets/site-config.js` の `demoMode: true` で、架空のクリエイター6人と作品4点を表示します。ブラウザで `index.html` を直接開いてもデモ表示できます。デモのカウントダウンはページを開いた時点から7日で、実際の開催日ではありません。公開前に `demoMode: false` にし、承認済みの実参加者を `creators.csv` に入れてください。
+
 ## 構成
 
 ```text
@@ -18,7 +20,7 @@ _headers                   Cloudflare Pages のキャッシュ設定
 SPEC.md                    要求仕様の草案
 ```
 
-ビルド工程はありません。ローカル確認では、`fetch` が動く静的サーバーでリポジトリのルートを配信してください。`file://` で直接開くと CSV を取得できない場合があります。
+ビルド工程はありません。仮展示は `file://` で直接開けます。`demoMode: false` にして実データの CSV を確認する際は、`fetch` が動く静的サーバーでリポジトリのルートを配信してください。
 
 ## 最初に設定するもの
 
@@ -26,6 +28,7 @@ SPEC.md                    要求仕様の草案
 
 - `siteName`、`shortDescription`: 正式な企画名と短い紹介。
 - `phase`: `preview`（予告版）、`open`（開催版）、`ended`（終了後）。公開切替は手動です。
+- `demoMode`: デザイン確認中は `true`。実データ確認と公開前には `false`。仮展示では note への架空リンクを作りません。
 - `eventStartAt`、`eventEndAt`: 日時をタイムゾーン付き ISO 8601 形式で記入します。例の形式は `2026-10-10T10:00:00+09:00`。**例の日時をそのまま使わないでください。**
 - `organizerName`、`organizerProfileUrl`、`organizerCharacterUrl`、`organizerStatement`: 主催者が確認した正式な名前・プロフィール・キャラ画像・企画趣旨の原文。
 - `announcementUrl`、`launchArticleUrl`、`magazineUrl`、`posterToolUrl`: 公開済みの正式 URL。未公開なら空のままにし、画面上は準備中表示にします。
