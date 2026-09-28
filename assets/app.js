@@ -176,11 +176,11 @@
       paragraphs.forEach(part => append(statement, el('p', '', part)));
     }
     setExternal('announcementLink', config.announcementUrl, '告知記事を読む');
-    setExternal('launchArticleLink', config.launchArticleUrl, '開始記事を読む');
-    setExternal('magazineLink', config.magazineUrl, '共同運営マガジンを見る');
+    setExternal('launchArticleLink', config.launchArticleUrl, '参加方法記事を読む', '参加方法記事：10月1日公開予定');
+    setExternal('magazineLink', config.magazineUrl, '展示マガジンを見る', '展示マガジン：準備中');
     const tool = httpsUrl(config.posterToolUrl);
-    replaceText('posterToolStatus', tool && config.phase === 'open' ? '公開中' : '近日公開');
-    setExternal('posterToolLink', config.phase === 'open' ? tool : '', 'ポスターツールを開く');
+    replaceText('posterToolStatus', tool ? '公開中' : '近日公開');
+    setExternal('posterToolLink', tool, 'ポスターツールを開く', 'ツール：10月1日公開予定');
   }
   function badge() { return el('span', 'badge-new', 'NEW'); }
   function imageOrPlaceholder(url, alt, kind, width, height) {
