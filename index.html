@@ -153,7 +153,7 @@
         <nav class="doors" aria-label="展示室へ">
           <a class="door" href="#creators"><span class="door-icon" aria-hidden="true">🎠</span><span class="door-title">参加クリエイター</span><span class="door-note">メリーゴーランドで人に出会う</span></a>
           <a class="door" href="#gallery"><span class="door-icon" aria-hidden="true">🖼️</span><span class="door-title">夜の美術館</span><span class="door-note">額縁に並ぶ作品をめぐる</span></a>
-          <a class="door" href="#join"><span class="door-icon" aria-hidden="true">🎃</span><span class="door-title">参加する</span><span class="door-note">ポスターツールと参加方法</span></a>
+          <a class="door" href="#join"><span class="door-icon" aria-hidden="true">🎃</span><span class="door-title">参加する</span><span class="door-note">ツールと参加方法</span></a>
         </nav>
       </div>
     </div>
@@ -269,13 +269,17 @@
       </div>
     <section class="block tool-section reveal" id="tool" aria-labelledby="toolTitle">
       <div class="wrap">
-        <h2 id="toolTitle">ポスターツール</h2>
-        <div class="panel tool-panel">
-          <div class="poster-placeholder" aria-hidden="true"><span>✦</span></div>
-          <div>
-            <p>あなたのnoteを読んで、ハロウィンの仮装ポスターを作るためのツールです。10月1日の参加方法記事で無料公開する予定です。ツールは参加条件ではありません。</p>
-            <p id="posterToolStatus" role="status">公開準備中</p>
-            <a id="posterToolLink" class="btn disabled" aria-disabled="true">ツール：準備中</a>
+        <h2 id="toolTitle">ツール</h2>
+        <p class="section-intro">作品づくりに使える無料ツールです。ツールは参加条件ではありません。</p>
+        <!-- ツール一覧：site-config.js の tools から描く（app.js の renderTools） -->
+        <div class="tool-list" id="toolList">
+          <div class="panel tool-panel">
+            <div class="poster-placeholder" aria-hidden="true"><span>✦</span></div>
+            <div>
+              <p>あなたのnoteを読んで、ハロウィンの仮装ポスターを作るためのツールです。ツールは参加条件ではありません。</p>
+              <p id="posterToolStatus" role="status">公開準備中</p>
+              <a id="posterToolLink" class="btn disabled" aria-disabled="true">ツール：準備中</a>
+            </div>
           </div>
         </div>
       </div>

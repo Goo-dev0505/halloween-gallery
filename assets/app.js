@@ -254,6 +254,24 @@
     creditLine($('footerTeam'), '運営', operators);
     creditLine($('footerSponsors'), '協賛', sponsors);
   }
+  // 参加ページのツール一覧：config.tools があればカードで並べる（なければ HTML の準備中表示のまま）
+  function renderTools() {
+    const list = $('toolList');
+    const tools = (Array.isArray(config.tools) ? config.tools : []).filter(t => t && t.name && httpsUrl(t.url));
+    if (!list || !tools.length) return;
+    list.replaceChildren(...tools.map(t => {
+      const card = el('article', 'tool-card');
+      const media = el('div', 'tool-media'), image = imageUrl(t.image);
+      if (image) { const img = el('img'); img.src = image; img.alt = ''; img.loading = 'lazy'; img.addEventListener('error', () => img.replaceWith(el('span', 'tool-icon', t.icon || '✦')), { once: true }); media.append(img); }
+      else media.append(el('span', 'tool-icon', t.icon || '✦'));
+      const body = el('div', 'tool-body');
+      if (t.en) append(body, el('p', 'tool-en', t.en));
+      append(body, el('h3', '', t.name));
+      if (t.text) append(body, el('p', 'tool-text', t.text));
+      append(body, link('ツールを開く', httpsUrl(t.url), 'btn tool-open'));
+      return append(card, media, body);
+    }));
+  }
   function badge() { return el('span', 'badge-new', 'NEW'); }
   function imageOrPlaceholder(url, alt, kind, width, height) {
     const box = el('span', kind);
@@ -694,7 +712,7 @@
   }
   async function init() {
     showView(parseHash(location.hash).view); // 最初のフレームから正しいビューを出す（データ読込前）
-    initEvent(); initOrganizer(); initTeam(); bindUi(); bindRouter();
+    initEvent(); initOrganizer(); initTeam(); renderTools(); bindUi(); bindRouter();
     if (demoMode && $('demoNotice')) $('demoNotice').hidden = false;
     try { state.rows = demoMode ? demoRows() : await loadCsv(); state.order = shuffle(state.rows); }
     catch (error) { state.failed = true; console.error('creators.csv の取得・解析に失敗しました:', error); }
