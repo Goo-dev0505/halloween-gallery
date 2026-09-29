@@ -752,3 +752,22 @@ body.is-torch .frame:nth-child(odd)::before { filter: drop-shadow(0 0 14px rgb(2
   .courier-body { width: 44px; }
   .torch-pill { gap: 8px; font-size: 12px; }
 }
+
+/* ---------- 20. 高速回転ルーレット（メリーゴーランド） ---------- */
+.carousel-controls { flex-wrap: wrap; }
+.turbo-btn { min-width: 150px; }
+.turbo-btn.is-hot { background: var(--accent-deep); border-color: var(--accent-deep); animation: turbo-throb .4s ease-in-out infinite alternate; }
+@keyframes turbo-throb { from { box-shadow: 0 0 0 0 rgb(255 122 26 / 50%); } to { box-shadow: 0 0 0 8px rgb(255 122 26 / 0%); } }
+/* 速さの段階ごとに：ブレ→揺れ→床が光る */
+.stage.turbo-2 .cc .face, .stage.is-braking .cc .face { filter: blur(.6px); }
+.stage.turbo-3 .cc .face { filter: blur(1.6px) brightness(1.15); }
+.stage.turbo-3 { animation: stage-shake .09s linear infinite; }
+.stage.turbo-3 .floor, .stage.is-braking .floor { background: radial-gradient(ellipse at center, rgb(255 122 26 / 70%) 0%, rgb(244 163 64 / 25%) 55%, transparent 72%); }
+.stage.turbo-3 .pole { opacity: 1; box-shadow: 0 0 16px var(--accent); }
+@keyframes stage-shake { 0% { transform: translate(0, 0); } 25% { transform: translate(1.5px, -1px); } 50% { transform: translate(-1px, 1.5px); } 75% { transform: translate(1px, 1px); } 100% { transform: translate(0, 0); } }
+/* 止まった人 */
+.cc.is-winner .face.front { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent), 0 0 36px rgb(244 163 64 / 70%); }
+.spin-result { order: 4; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; margin: 12px auto 0; padding: 8px 8px 8px 18px; width: fit-content; max-width: 100%; border: 1px solid var(--gold-soft); border-radius: 999px; background: var(--surface); animation: reward-in .4s ease both; }
+.spin-result[hidden] { display: none; }
+.spin-result-text { font-weight: 700; }
+.spin-result .act { min-height: 40px; }
