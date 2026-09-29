@@ -94,25 +94,39 @@
     </section>
 
     <section class="block about reveal" id="about" aria-labelledby="aboutTitle">
-      <div class="wrap narrow">
+      <div class="wrap">
         <h2 id="aboutTitle">この企画について</h2>
         <p class="section-intro">主催・KITAcoreより。告知記事から抜粋しています。</p>
-        <div id="organizerCharacterAbout" class="organizer-character organizer-character-about" role="img" aria-label="主催者キャラクター画像は準備中です">
-          <span aria-hidden="true">🎃</span>
-          <span class="sr-only">主催者キャラクター画像は準備中です。</span>
-        </div>
-        <div class="panel prose" id="organizerStatement" aria-live="polite">
-          <p>主催者からの企画趣旨の原文を受領後、全文を掲載します。</p>
-          <p>開催内容、主催者情報、告知記事は確認が整い次第お知らせします。</p>
-        </div>
-        <div class="team" id="teamBlock" hidden>
-          <h3 class="team-title">運営チーム</h3>
-          <ul class="team-list" id="teamList" role="list"></ul>
-          <div class="sponsor-list" id="sponsorList"></div>
-        </div>
-        <div class="actions">
-          <a class="act" href="#join">参加方法を見る</a>
-          <a id="announcementLink" class="link-placeholder" aria-disabled="true">告知記事：準備中</a>
+        <div class="about-layout">
+          <div class="about-text">
+            <div id="organizerCharacterAbout" class="organizer-character organizer-character-about" role="img" aria-label="主催者キャラクター画像は準備中です">
+              <span aria-hidden="true">🎃</span>
+              <span class="sr-only">主催者キャラクター画像は準備中です。</span>
+            </div>
+            <div class="panel prose" id="organizerStatement" aria-live="polite">
+              <p>主催者からの企画趣旨の原文を受領後、全文を掲載します。</p>
+              <p>開催内容、主催者情報、告知記事は確認が整い次第お知らせします。</p>
+            </div>
+          </div>
+          <!-- キービジュアル：金の額縁に入れた「展示物」として見せる。押すと原寸で開く -->
+          <figure class="exhibit exhibit-kv">
+            <a class="exhibit-frame" href="assets/visuals/key-visual.webp" target="_blank" rel="noopener">
+              <img src="assets/visuals/key-visual.webp" width="941" height="1672" loading="lazy" decoding="async"
+                alt="ハロウィンアート2026のキービジュアル。かぼちゃを抱えたフード姿のキャラクターと黒猫。「ハロウィンアート2026って何するん？ハロウィンに関わるものを作って、見せ合う。」イラスト・写真・動画・漫画・音楽・文章、手描きでもAIでもOK。">
+            </a>
+            <figcaption>キービジュアル</figcaption>
+          </figure>
+          <div class="about-more">
+            <div class="team" id="teamBlock" hidden>
+              <h3 class="team-title">運営チーム</h3>
+              <ul class="team-list" id="teamList" role="list"></ul>
+              <div class="sponsor-list" id="sponsorList"></div>
+            </div>
+            <div class="actions">
+              <a class="act" href="#join">参加方法を見る</a>
+              <a id="announcementLink" class="link-placeholder" aria-disabled="true">告知記事：準備中</a>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -235,6 +249,23 @@
           <li><div><strong>10月19日〜31日｜noteに投稿する</strong><span>10月19日が一斉投稿のスタート日です。間に合わなくても、10月31日までなら完成した人から順次投稿できます。</span></div></li>
           <li><div><strong>展示したい1記事を申請する</strong><span>投稿は複数でもOK。展示サイトに載るのは1人1記事です。申請方法は参加方法記事で案内します。</span></div></li>
         </ol>
+        <!-- 告知記事の図解。まず覚える4つ＋全体スケジュール。押すと原寸で開く -->
+        <div class="exhibit-pair">
+          <figure class="exhibit">
+            <a class="exhibit-frame" href="assets/visuals/four-points.webp" target="_blank" rel="noopener">
+              <img src="assets/visuals/four-points.webp" width="1122" height="1402" loading="lazy" decoding="async"
+                alt="まずこの4つだけ覚えて。1：10月1日〜6日 正式参加表明。2：10月19日 一斉投稿スタート。3：10月20日〜31日 展示＆追加投稿OK。4：展示Webに載せられるのは1人1記事。">
+            </a>
+            <figcaption>まずこの4つだけ覚えて</figcaption>
+          </figure>
+          <figure class="exhibit">
+            <a class="exhibit-frame" href="assets/visuals/schedule.webp" target="_blank" rel="noopener">
+              <img src="assets/visuals/schedule.webp" width="1122" height="1402" loading="lazy" decoding="async"
+                alt="スケジュール。10月1日〜6日 参加表明受付、7日〜12日 参加者まとめ、13日〜18日 作品制作・展示準備、19日 一斉投稿スタート、20日 展示掲載スタート、31日 展示の最終日、11月1日 終了・振り返り。">
+            </a>
+            <figcaption>全体スケジュール（日本時間）</figcaption>
+          </figure>
+        </div>
         <div class="links" aria-label="関連リンク">
           <a id="launchArticleLink" class="link-placeholder" aria-disabled="true">開始記事：準備中</a>
           <a id="magazineLink" class="link-placeholder" aria-disabled="true">共同運営マガジン：準備中</a>

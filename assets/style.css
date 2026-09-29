@@ -578,3 +578,26 @@ body.is-switching::after {
 .hero h1 .title-year { color: var(--accent); text-shadow: 0 0 22px rgb(255 122 26 / 55%), 3px 4px 0 var(--on-accent); }
 /* 文節で折り返す（対応ブラウザのみ。非対応でも通常の折り返しになるだけ） */
 .prose, .section-intro, .steps span, .tool-panel p, .organizer-card > p, .sponsor-title { word-break: auto-phrase; text-wrap: pretty; }
+
+/* ---------- 18. 展示物（告知記事の画像を金の額縁で見せる） ---------- */
+/* 企画について：スマホは 文章→キービジュアル→運営、PCは左に文章と運営・右にキービジュアル */
+.about-layout { display: grid; gap: 28px; grid-template-areas: "text" "kv" "more"; }
+.about-text { grid-area: text; min-width: 0; }
+.about-more { grid-area: more; min-width: 0; }
+.exhibit-kv { grid-area: kv; justify-self: center; width: min(100%, 400px); }
+@media (min-width: 900px) {
+  .about-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 360px); grid-template-areas: "text kv" "more kv"; column-gap: 48px; align-items: start; }
+  .exhibit-kv { position: sticky; top: calc(var(--nav-h) + 24px); width: 100%; }
+}
+.exhibit { margin: 0; }
+.exhibit-frame {
+  display: block; padding: 8px; border: 6px double var(--gold); border-radius: 6px; background: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--bg-deep), var(--shadow); transition: transform .3s, box-shadow .3s;
+}
+.exhibit-frame:hover, .exhibit-frame:focus-visible { transform: rotate(-.6deg) translateY(-3px); box-shadow: inset 0 0 0 2px var(--bg-deep), 0 14px 32px rgb(255 122 26 / 22%); }
+.exhibit-frame img { width: 100%; height: auto; border-radius: 3px; }
+.exhibit figcaption { margin-top: 8px; color: var(--muted); font-size: 13px; text-align: center; }
+.exhibit figcaption::after { content: "（押すと原寸で開きます）"; font-size: 11px; opacity: .8; }
+/* 参加方法：図解2枚。PCは横並び、スマホは縦に */
+.exhibit-pair { display: grid; gap: 24px; margin: 28px 0 8px; }
+@media (min-width: 700px) { .exhibit-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
