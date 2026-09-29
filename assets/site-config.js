@@ -20,6 +20,17 @@ window.HALLOWEEN_CONFIG = {
 作品を入口に、人へ会いにいく展示会。今回やりたいのは、これや。
 
 この企画は、上手い作品を選ぶための企画やない。「誰が一番すごいか」を決める場所やなくて、それぞれが作ったものを持ってきて、「こんなん作ったで」って並べる場所。`,
+  // 運営チーム：「この企画について」のメンバーカード、入口のクレジット行、フッターに表示
+  // role は '主催' / '運営'。icon は任意（空なら 🎃）
+  team: [
+    { role: '主催', name: 'KITAcore', url: 'https://note.com/ktcrs1107', icon: 'https://assets.st-note.com/production/uploads/images/229742136/75a87979bd25ec75d7a88eaf5feef751.png' },
+    { role: '運営', name: 'HONO', url: 'https://note.com/hospital_ph_hono', icon: 'https://assets.st-note.com/production/uploads/images/272512361/f7a70e3dee212ae80053ec5c58781d53.png' },
+    { role: '運営', name: '考える赤柴', url: 'https://note.com/eager_thyme9842', icon: 'https://assets.st-note.com/production/uploads/images/287811001/profile_61bd215e791f673065ace52a3d904ebb.png?fit=bounds&format=jpeg&quality=85&width=330' }
+  ],
+  // 協賛：「この企画について」の協賛カード、入口のクレジット行、フッターに表示
+  sponsors: [
+    { role: '協賛', name: 'ChatGPTCreativeClub（CCC）', title: 'ChatGPTCreativeClub【共同マガジン】', url: 'https://note.com/nenkoro2/m/m38c6d06537bf', image: 'https://assets.st-note.com/production/uploads/images/271978075/293f6ccb3762be3fc835c5333ee9446b.png?width=432&dpr=2' }
+  ],
   announcementUrl: 'https://note.com/ktcrs1107/n/n397fe2a90d5c',
   launchArticleUrl: '',
   magazineUrl: '',

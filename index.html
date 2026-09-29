@@ -63,7 +63,7 @@
             <a class="btn secondary" id="heroSecondary" href="#join">参加方法を見る</a>
             <a class="btn text-link" href="#gallery">作品を見る</a>
           </div>
-          <p class="credit-line">特設サイト制作・ポスターツール提供：KITAcore</p>
+          <p class="credit-line" id="heroCredits">特設サイト制作・ポスターツール提供：KITAcore</p>
         </div>
         <aside class="organizer-card panel" aria-labelledby="organizerName">
           <div class="moon" aria-hidden="true">☾</div>
@@ -92,6 +92,11 @@
         <div class="panel prose" id="organizerStatement" aria-live="polite">
           <p>主催者からの企画趣旨の原文を受領後、全文を掲載します。</p>
           <p>開催内容、主催者情報、告知記事は確認が整い次第お知らせします。</p>
+        </div>
+        <div class="team" id="teamBlock" hidden>
+          <h3 class="team-title">運営チーム</h3>
+          <ul class="team-list" id="teamList" role="list"></ul>
+          <div class="sponsor-list" id="sponsorList"></div>
         </div>
         <div class="actions">
           <a class="act" href="#join">参加方法を見る</a>
@@ -230,6 +235,8 @@
   <footer class="site-footer">
     <div class="wrap">
       <p>企画・主催：<span id="footerOrganizerName">主催者名 準備中</span></p>
+      <p id="footerTeam" hidden></p>
+      <p id="footerSponsors" hidden></p>
       <p>特設サイト制作・ポスターツール提供：KITAcore</p>
       <p id="footerEventDates">開催期間：準備中</p>
     </div>

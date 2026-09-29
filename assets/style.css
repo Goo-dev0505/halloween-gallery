@@ -519,3 +519,53 @@ body.is-switching::after {
   .view-bar-inner { min-height: 44px; }
   .view-count { font-size: 12px; }
 }
+
+/* ---------- 16. 運営チーム・協賛（site-config.js の team / sponsors） ---------- */
+.team { margin: 28px 0 8px; }
+.team[hidden] { display: none; }
+.team-title { margin: 0 0 14px; font-family: var(--body); font-weight: 700; font-size: 15px; color: var(--accent); letter-spacing: .04em; }
+.team-list { display: flex; flex-wrap: wrap; gap: 14px; margin: 0; padding: 0; list-style: none; }
+/* メンバー：丸アイコン＋役割チップ＋名前。主催は橙、運営はミント */
+.member {
+  display: grid; justify-items: center; gap: 6px; width: 132px; padding: 16px 10px 14px;
+  border: 1px solid var(--gold-soft); border-radius: var(--radius); background: var(--surface);
+  color: var(--text); text-align: center; text-decoration: none;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+}
+.member:hover, .member:focus-visible { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 10px 24px rgb(255 122 26 / 22%); }
+.member .avatar { width: 64px; height: 64px; }
+.member-role { padding: 2px 10px; border: 1px solid rgb(143 211 182 / 50%); border-radius: 999px; background: rgb(143 211 182 / 12%); color: var(--mint); font-size: 11px; font-weight: 700; line-height: 1.6; }
+.member-role.is-host { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+.member-name { font-size: 14px; font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
+/* 協賛：マガジンの表紙＋金縁。展示の「額縁」と同じ言葉で揃える */
+.sponsor-list { display: grid; gap: 12px; max-width: 66ch; margin-top: 16px; } /* 上の企画趣旨パネルと幅を揃える */
+.sponsor-list:empty { display: none; }
+.sponsor-card {
+  display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 1fr); align-items: center; gap: 16px; padding: 10px;
+  border: 4px double var(--gold); border-radius: 8px; background: var(--surface);
+  color: var(--text); text-decoration: none; transition: transform .2s, box-shadow .2s;
+}
+.sponsor-card:hover, .sponsor-card:focus-visible { transform: translateY(-3px); box-shadow: 0 12px 28px rgb(255 122 26 / 22%); }
+.sponsor-media { display: grid; place-items: center; aspect-ratio: 1.91 / 1; overflow: hidden; border-radius: 4px; background: #221638; }
+.sponsor-media .work-image, .sponsor-media img { width: 100%; height: 100%; object-fit: cover; }
+.sponsor-mark { font-size: 32px; color: var(--gold); }
+.sponsor-body { display: grid; gap: 2px; min-width: 0; padding-right: 6px; }
+.sponsor-role { justify-self: start; margin-bottom: 4px; padding: 2px 10px; border-radius: 999px; background: var(--gold); color: var(--on-accent); font-size: 11px; font-weight: 700; line-height: 1.6; }
+.sponsor-name { font-family: var(--display); font-size: 1.05rem; line-height: 1.4; overflow-wrap: anywhere; }
+.sponsor-title { color: var(--muted); font-size: 13px; line-height: 1.5; }
+.sponsor-cta { margin-top: 6px; color: var(--accent); font-size: 13px; font-weight: 700; }
+.sponsor-cta::after { content: " →"; }
+/* クレジット行（入口・フッター） */
+.credit-line { display: flex; flex-wrap: wrap; gap: 2px 14px; }
+.credit-label { color: var(--muted); }
+.credit-link { color: var(--text); text-underline-offset: .2em; }
+.credit-link:hover { color: var(--accent); }
+.site-footer p[hidden] { display: none; }
+@media (max-width: 599px) {
+  .team-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .member { width: auto; padding: 14px 6px 12px; }
+  .member .avatar { width: 52px; height: 52px; }
+  .sponsor-card { grid-template-columns: 1fr; }
+}
+/* 主催キャラ画像が読めないときの代替文字が丸枠からはみ出さないように */
+.organizer-character .image-placeholder { padding: 8px; font-size: 12px; line-height: 1.4; text-align: center; }

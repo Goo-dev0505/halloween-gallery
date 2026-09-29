@@ -182,6 +182,53 @@
     replaceText('posterToolStatus', tool ? '公開中' : '近日公開');
     setExternal('posterToolLink', tool, 'ポスターツールを開く', 'ツール：10月1日公開予定');
   }
+  /* 運営チーム・協賛：site-config.js の team / sponsors から描く。note 以外のプロフィールURLは出さない */
+  function teamMembers() { return (Array.isArray(config.team) ? config.team : []).filter(m => m && m.name && httpsUrl(m.url, 'note.com')); }
+  function sponsorItems() { return (Array.isArray(config.sponsors) ? config.sponsors : []).filter(s => s && s.name && httpsUrl(s.url)); }
+  // 「ラベル：A・B」形式のクレジット行。名前はそれぞれ note へのリンク
+  function creditLine(node, label, items) {
+    if (!node || !items.length) return false;
+    node.replaceChildren(el('span', 'credit-label', label + '：'));
+    items.forEach((item, i) => { if (i) append(node, '・'); append(node, link(item.name, httpsUrl(item.url), 'credit-link')); });
+    node.hidden = false;
+    return true;
+  }
+  function initTeam() {
+    const team = teamMembers(), sponsors = sponsorItems();
+    const operators = team.filter(m => m.role !== '主催');
+    const block = $('teamBlock');
+    if (block && (team.length || sponsors.length)) {
+      $('teamList')?.replaceChildren(...team.map(m => {
+        const card = link('', httpsUrl(m.url, 'note.com'), 'member');
+        card.setAttribute('aria-label', `${m.role || '運営'}・${m.name}のnoteプロフィール`);
+        const icon = httpsUrl(m.icon);
+        append(card,
+          icon ? imageOrPlaceholder(icon, '', 'avatar', 64, 64) : el('span', 'avatar image-placeholder', '🎃'),
+          el('span', 'member-role' + (m.role === '主催' ? ' is-host' : ''), m.role || '運営'),
+          el('span', 'member-name', m.name));
+        return append(el('li'), card);
+      }));
+      $('sponsorList')?.replaceChildren(...sponsors.map(sp => {
+        const card = link('', httpsUrl(sp.url), 'sponsor-card');
+        const media = el('span', 'sponsor-media'), image = httpsUrl(sp.image);
+        append(media, image ? imageOrPlaceholder(image, '', 'work-image', 216, 113) : el('span', 'sponsor-mark', '✦'));
+        const body = append(el('span', 'sponsor-body'), el('span', 'sponsor-role', sp.role || '協賛'), el('span', 'sponsor-name', sp.name));
+        if (sp.title) append(body, el('span', 'sponsor-title', sp.title));
+        append(body, el('span', 'sponsor-cta', 'マガジンを見る'));
+        return append(card, media, body);
+      }));
+      block.hidden = false;
+    }
+    // 入口のクレジット行：運営と協賛があれば差し替える（なければ元の制作クレジットのまま）
+    const hero = $('heroCredits');
+    if (hero && (operators.length || sponsors.length)) {
+      const opsLine = el('span', 'credit-group'), spLine = el('span', 'credit-group');
+      const parts = [creditLine(opsLine, '運営', operators) && opsLine, creditLine(spLine, '協賛', sponsors) && spLine].filter(Boolean);
+      hero.replaceChildren(...parts);
+    }
+    creditLine($('footerTeam'), '運営', operators);
+    creditLine($('footerSponsors'), '協賛', sponsors);
+  }
   function badge() { return el('span', 'badge-new', 'NEW'); }
   function imageOrPlaceholder(url, alt, kind, width, height) {
     const box = el('span', kind);
@@ -465,7 +512,7 @@
   }
   async function init() {
     showView(parseHash(location.hash).view); // 最初のフレームから正しいビューを出す（データ読込前）
-    initEvent(); initOrganizer(); bindUi(); bindRouter();
+    initEvent(); initOrganizer(); initTeam(); bindUi(); bindRouter();
     if (demoMode && $('demoNotice')) $('demoNotice').hidden = false;
     try { state.rows = demoMode ? demoRows() : await loadCsv(); state.order = shuffle(state.rows); }
     catch (error) { state.failed = true; console.error('creators.csv の取得・解析に失敗しました:', error); }
