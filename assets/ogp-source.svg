@@ -1,20 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title">
-  <title id="title">ハロウィン・ノート展 仮OGP</title>
+  <!-- SNS共有画像（OGP）の元データ。assets/ogp.png はこれを Mochiy Pop One / Zen Maru Gothic で描き出したもの -->
+  <title id="title">ハロウィンアート2026 OGP</title>
   <defs>
     <linearGradient id="night" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#150b27"/><stop offset=".55" stop-color="#2d1748"/><stop offset="1" stop-color="#411e3f"/></linearGradient>
-    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#ffa34b"/><stop offset="1" stop-color="#ff751e"/></linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#f4a340"/><stop offset="1" stop-color="#ff7a1a"/></linearGradient>
+    <linearGradient id="drip" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#f4a340"/><stop offset=".35" stop-color="#d9b45b"/><stop offset=".6" stop-color="#ff7a1a"/><stop offset="1" stop-color="#f4a340"/></linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop stop-color="#f4a340" stop-opacity=".35"/><stop offset="1" stop-color="#f4a340" stop-opacity="0"/></radialGradient>
+    <!-- 三日月：金の円を、ずらした円でくり抜く（背景色の円を重ねない） -->
+    <mask id="crescent"><rect width="1200" height="630" fill="#fff"/><circle cx="1112" cy="128" r="62" fill="#000"/></mask>
+    <radialGradient id="pumpkin" cx=".45" cy=".4" r=".7"><stop stop-color="#ffb259"/><stop offset="1" stop-color="#e8650f"/></radialGradient>
   </defs>
   <rect width="1200" height="630" fill="url(#night)"/>
-  <g fill="#efdaae" opacity=".8"><circle cx="70" cy="80" r="3"/><circle cx="310" cy="120" r="2"/><circle cx="1015" cy="85" r="2"/><circle cx="895" cy="180" r="3"/><circle cx="1170" cy="320" r="2"/><circle cx="630" cy="60" r="2"/></g>
-  <circle cx="980" cy="160" r="83" fill="#efc891"/><circle cx="954" cy="145" r="78" fill="#2a1643"/>
-  <path d="M1200 47H0v22q35 0 52 6c17 7 21 32 23 47 2 11 14 11 16 0l4-43q33-7 69 1 25 7 30 29c2 12 15 12 17 0l4-29q55-11 113 1c18 4 20 29 23 53 2 12 16 12 18 0l4-54q71-12 132 1c18 4 23 28 25 42 2 11 14 11 16 0l4-44q80-9 160 2c25 4 27 30 31 61 2 12 16 12 18 0l4-60q67-10 135 0c27 4 28 29 31 47 2 10 14 10 16 0l4-38q64-13 130-2 19 3 21 28c1 11 14 11 16 0l4-33q61-10 120 0c21 4 23 24 27 40 2 9 14 9 16 0l4-30Z" fill="#ae64c6"/>
-  <path d="M804 442V287a112 112 0 0 1 224 0v155" fill="#1b102b" stroke="#ddb263" stroke-width="12"/>
-  <path d="M827 444V287a89 89 0 0 1 178 0v157" fill="#2a1a3b"/>
-  <text x="73" y="206" font-size="28" fill="#ffb36a" font-family="Hiragino Kaku Gothic ProN,Noto Sans CJK JP,sans-serif">ONLINE HALLOWEEN EXHIBITION</text>
-  <text x="68" y="303" font-size="79" font-weight="800" fill="#f5f0ff" font-family="Hiragino Kaku Gothic ProN,Noto Sans CJK JP,sans-serif">ハロウィン・</text>
-  <text x="68" y="399" font-size="79" font-weight="800" fill="#f5f0ff" font-family="Hiragino Kaku Gothic ProN,Noto Sans CJK JP,sans-serif">ノート展（仮）</text>
-  <text x="73" y="460" font-size="29" fill="#d5c8e3" font-family="Hiragino Kaku Gothic ProN,Noto Sans CJK JP,sans-serif">作品から、まだ知らないクリエイターへ。</text>
-  <rect x="72" y="515" width="367" height="52" rx="26" fill="url(#orange)"/>
-  <text x="104" y="548" font-size="21" font-weight="700" fill="#220c1a" font-family="Hiragino Kaku Gothic ProN,Noto Sans CJK JP,sans-serif">正式素材へ差し替え予定</text>
-  <text x="925" y="550" font-size="24" fill="#eacdaf" font-family="Hiragino Kaku Gothic ProN,Noto Sans CJK JP,sans-serif">KITAcore</text>
+  <g fill="#efdaae" opacity=".8"><circle cx="70" cy="120" r="3"/><circle cx="330" cy="150" r="2"/><circle cx="760" cy="130" r="2"/><circle cx="1150" cy="170" r="3"/><circle cx="1170" cy="400" r="2"/><circle cx="640" cy="560" r="2"/><circle cx="560" cy="140" r="2"/></g>
+  <!-- 月 -->
+  <circle cx="1090" cy="150" r="150" fill="url(#glow)"/>
+  <circle cx="1090" cy="150" r="66" fill="#f4c56a" mask="url(#crescent)"/>
+  <!-- キャラメル色のドリップ（サイトの見出し下と同じ色） -->
+  <path d="M1200 0H0v34q35 0 52 6c17 7 21 32 23 47 2 11 14 11 16 0l4-43q33-7 69 1 25 7 30 29c2 12 15 12 17 0l4-29q55-11 113 1c18 4 20 29 23 53 2 12 16 12 18 0l4-54q71-12 132 1c18 4 23 28 25 42 2 11 14 11 16 0l4-44q80-9 160 2c25 4 27 30 31 61 2 12 16 12 18 0l4-60q67-10 135 0c27 4 28 29 31 47 2 10 14 10 16 0l4-38q64-13 130-2 19 3 21 28c1 11 14 11 16 0l4-33q61-10 120 0c21 4 23 24 27 40 2 9 14 9 16 0l4-30Z" fill="url(#drip)"/>
+  <!-- 美術館の扉とかぼちゃ -->
+  <path d="M870 520V330a120 120 0 0 1 240 0v190" fill="#1b102b" stroke="#d9b45b" stroke-width="12"/>
+  <path d="M893 522V330a97 97 0 0 1 194 0v192" fill="#2a1a3b"/>
+  <ellipse cx="990" cy="512" rx="130" ry="10" fill="#0f0a1a" opacity=".6"/>
+  <g transform="translate(990 450)">
+    <path d="M-4-58q4-16 16-20" stroke="#6b8f3a" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <ellipse cx="-30" cy="0" rx="36" ry="54" fill="url(#pumpkin)"/>
+    <ellipse cx="30" cy="0" rx="36" ry="54" fill="url(#pumpkin)"/>
+    <ellipse cx="0" cy="0" rx="34" ry="57" fill="#ff9a36"/>
+    <path d="M-34-14l14-18 14 18Z M6-14l14-18 14 18Z" fill="#3b1a0a"/>
+    <path d="M-38 12q38 30 76 0l-10 4-8 10-10-8-10 8-10-8-10 8-8-10Z" fill="#3b1a0a"/>
+  </g>
+  <!-- 文字 -->
+  <text x="72" y="190" font-size="26" letter-spacing="3" fill="#f4a340" font-family="Zen Maru Gothic,Noto Sans CJK JP,sans-serif" font-weight="700">ONLINE HALLOWEEN EXHIBITION</text>
+  <text x="66" y="296" font-size="86" fill="#fff4e3" font-family="Mochiy Pop One,Noto Sans CJK JP,sans-serif">ハロウィンアート</text>
+  <text x="66" y="398" font-size="92" fill="#f4a340" font-family="Mochiy Pop One,Noto Sans CJK JP,sans-serif">2026</text>
+  <text x="72" y="462" font-size="30" fill="#e6dcf2" font-family="Zen Maru Gothic,Noto Sans CJK JP,sans-serif" font-weight="700">作品を入口に、人へ会いにいく展示会。</text>
+  <rect x="72" y="512" width="330" height="56" rx="28" fill="url(#orange)"/>
+  <text x="237" y="549" text-anchor="middle" font-size="24" fill="#1f1436" font-family="Zen Maru Gothic,Noto Sans CJK JP,sans-serif" font-weight="700">展示 10.20 ― 10.31</text>
+  <text x="430" y="549" font-size="22" fill="#c9bde0" font-family="Zen Maru Gothic,Noto Sans CJK JP,sans-serif" font-weight="700">noteクリエイター参加型 ／ 主催 KITAcore</text>
 </svg>
