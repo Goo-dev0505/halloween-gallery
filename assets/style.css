@@ -127,7 +127,7 @@ main, .site-footer, .site-header, .demo-notice { position: relative; z-index: 1;
 .hero-layout { position: relative; z-index: 1; display: grid; gap: 32px; align-items: center; }
 .hero-copy { display: grid; gap: 10px; justify-items: start; min-width: 0; }
 .hero h1 {
-  font-size: clamp(2.2rem, 5.4vw, 3.8rem); /* 「ハロウィンアート2026」が右の主催者カードに重ならない大きさ */
+  font-size: clamp(2.2rem, 6vw, 4.4rem); /* 「ハロウィンアート」（8字）が右の主催者カードに重ならない大きさ */
   line-height: 1.2;
   max-width: 100%;
   color: var(--text);
@@ -436,7 +436,7 @@ button.tag:hover { background: rgb(143 211 182 / 26%); }
 @media (max-width: 599px) {
   .nav.wrap { flex-wrap: wrap; gap: 0 8px; padding-block: 6px; }
   .brand { font-size: 15px; }
-  .hero h1 { font-size: clamp(1.75rem, 8.8vw, 2.2rem); } /* 狭い画面でも「2026」の途中で折れない幅 */
+  .hero h1 { font-size: clamp(1.75rem, 9.4vw, 2.6rem); } /* 狭い画面でも「ハロウィンアート」が1行に収まる幅 */
   .nav-list { flex: 0 0 100%; margin: 0; }
   .nav-list a { padding: 4px 8px; font-size: 13px; min-height: 44px; }
   :root { --nav-h: 84px; }
@@ -562,10 +562,19 @@ body.is-switching::after {
 .credit-link:hover { color: var(--accent); }
 .site-footer p[hidden] { display: none; }
 @media (max-width: 599px) {
-  .team-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-  .member { width: auto; padding: 14px 6px 12px; }
-  .member .avatar { width: 52px; height: 52px; }
+  /* 人数に合わせて列数が変わる（4人なら4列、狭い端末では2列×2段） */
+  .team-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 8px; }
+  .member { width: auto; padding: 12px 4px 10px; gap: 4px; }
+  .member .avatar { width: 48px; height: 48px; }
+  .member-name { font-size: 12px; }
   .sponsor-card { grid-template-columns: 1fr; }
 }
 /* 主催キャラ画像が読めないときの代替文字が丸枠からはみ出さないように */
 .organizer-character .image-placeholder { padding: 8px; font-size: 12px; line-height: 1.4; text-align: center; }
+
+/* ---------- 17. 見出しの行分け・日本語の改行 ---------- */
+/* 見出し：「ハロウィンアート」「2026」を行ごとに出す。年号はアクセント色 */
+.hero h1 .title-line { display: block; }
+.hero h1 .title-year { color: var(--accent); text-shadow: 0 0 22px rgb(255 122 26 / 55%), 3px 4px 0 var(--on-accent); }
+/* 文節で折り返す（対応ブラウザのみ。非対応でも通常の折り返しになるだけ） */
+.prose, .section-intro, .steps span, .tool-panel p, .organizer-card > p, .sponsor-title { word-break: auto-phrase; text-wrap: pretty; }

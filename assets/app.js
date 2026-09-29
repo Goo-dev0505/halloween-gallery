@@ -109,9 +109,17 @@
     if (typeof value !== 'string' || !/T\d{2}:\d{2}.*(?:Z|[+-]\d{2}:\d{2})$/.test(value)) return NaN;
     return Date.parse(value);
   }
+  // 見出し：siteTitleLines があれば1行ずつ span で出す（最終行は年号として色を変える）
+  function renderTitle() {
+    const h1 = $('siteTitle'); if (!h1) return;
+    const lines = (Array.isArray(config.siteTitleLines) ? config.siteTitleLines : []).map(String).filter(Boolean);
+    if (!lines.length) { h1.textContent = config.siteName || 'ハロウィン・ノート展（仮）'; return; }
+    h1.replaceChildren(...lines.map((line, i) => el('span', 'title-line' + (i === lines.length - 1 && lines.length > 1 ? ' title-year' : ''), line)));
+    h1.setAttribute('aria-label', config.siteName || lines.join(''));
+  }
   function setCountdownVisibility(visible) { if ($('countdown')) $('countdown').hidden = !visible; }
   function initEvent() {
-    replaceText('siteTitle', config.siteName || 'ハロウィン・ノート展（仮）');
+    renderTitle();
     replaceText('siteLead', config.shortDescription || '作品から、まだ知らないクリエイターへ。');
     const configuredStart = eventTime(config.eventStartAt);
     const demoCountdown = demoMode && !Number.isFinite(configuredStart);
@@ -173,7 +181,12 @@
       statement.replaceChildren();
       const paragraphs = String(config.organizerStatement || '').trim().split(/\n\s*\n/).filter(Boolean);
       if (!paragraphs.length) paragraphs.push('企画趣旨は主催者からの原文を準備中です。');
-      paragraphs.forEach(part => append(statement, el('p', '', part)));
+      // 段落内の改行は <br> にする（文の切れ目で改行して読みやすくする）
+      paragraphs.forEach(part => {
+        const p = el('p');
+        part.split('\n').map(line => line.trim()).filter(Boolean).forEach((line, i) => { if (i) p.append(el('br')); p.append(line); });
+        append(statement, p);
+      });
     }
     setExternal('announcementLink', config.announcementUrl, '告知記事を読む');
     setExternal('launchArticleLink', config.launchArticleUrl, '参加方法記事を読む', '参加方法記事：10月1日公開予定');
