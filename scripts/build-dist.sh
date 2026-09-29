@@ -24,3 +24,12 @@ fi
 mkdir dist
 cp index.html creators.csv _headers dist/
 cp -R assets dist/
+
+# キャッシュ対策：index.html の ?v=dev を公開ごとに変わる版番号へ置き換える。
+# GitHub Pages は _headers が効かず CSS/JS を最大10分キャッシュするため、
+# 版番号を変えて「新しい index.html なのに古い app.js」が混ざる状態を防ぐ。
+version="${GITHUB_SHA:-}"
+version="${version:0:7}"
+[ -n "$version" ] || version="$(date +%Y%m%d%H%M%S)"
+sed -i.bak "s/?v=dev/?v=${version}/g" dist/index.html && rm -f dist/index.html.bak
+printf 'Asset version: %s\n' "$version"
