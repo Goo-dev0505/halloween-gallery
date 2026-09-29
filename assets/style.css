@@ -846,3 +846,31 @@ body.is-torch .frame:nth-child(odd)::before { filter: drop-shadow(0 0 14px rgb(2
 .jfx-tv .jfx-line { padding: 6px 16px; background: rgb(0 0 0 / 72%); font-family: var(--body); font-weight: 700; letter-spacing: .06em; text-shadow: 2px 0 rgb(255 60 60 / 60%), -2px 0 rgb(60 200 255 / 60%); }
 .jfx-tv.is-off { animation: tv-off .7s ease-in forwards; }
 @keyframes tv-off { 0% { transform: scale(1, 1); opacity: 1; filter: brightness(1); } 55% { transform: scale(1, .004); filter: brightness(3); opacity: 1; } 100% { transform: scale(0, .004); filter: brightness(3); opacity: 0; } }
+
+/* ---------- 22. 参加ページの注釈（演出のほのめかし） ---------- */
+.join-hint {
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 16px; padding: 6px 14px 6px 10px;
+  border: 1px dashed var(--gold-soft); border-radius: 999px; background: rgb(43 27 74 / 60%);
+  color: var(--muted); font-size: 13px; line-height: 1.5;
+}
+/* 導火線：開くとジリジリ燃えて、燃え切ると演出が始まる */
+.join-hint-fuse { position: relative; flex: 0 0 64px; height: 4px; border-radius: 2px; background: rgb(201 189 224 / 18%); overflow: visible; }
+.join-hint-fuse > span { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 2px; background: linear-gradient(90deg, var(--gold), var(--accent-deep)); }
+.join-hint.is-burning .join-hint-fuse > span { animation: fuse-burn var(--fuse, 6s) linear forwards; }
+.join-hint.is-burning .join-hint-fuse > span::after { content: ""; position: absolute; right: -4px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: #ffe08a; box-shadow: 0 0 8px 2px var(--accent); animation: spark .2s steps(2) infinite; }
+@keyframes fuse-burn { to { width: 100%; } }
+@keyframes spark { 50% { transform: scale(.6); opacity: .7; } }
+.join-hint-icon { display: inline-block; font-size: 18px; animation: hint-peek 3.6s ease-in-out infinite; }
+@keyframes hint-peek { 0%, 70%, 100% { transform: translateY(0) rotate(0); opacity: 1; } 78% { transform: translateY(-3px) rotate(-10deg); } 86% { transform: translateY(0) rotate(8deg); opacity: .6; } }
+/* 動きを減らす設定では演出が出ないので、注釈も出さない */
+@media (prefers-reduced-motion: reduce) { .join-hint { display: none; } }
+/* 注釈は「参加する」の上帯の中に置く（小さめ・中央寄せ） */
+.view-bar .join-hint { margin: 0 auto; padding: 4px 12px 4px 8px; font-size: 12px; background: rgb(15 10 26 / 45%); }
+.view-bar .join-hint-icon { font-size: 16px; }
+@media (max-width: 599px) {
+  .view-bar-inner:has(.join-hint) { flex-wrap: wrap; row-gap: 4px; padding-bottom: 6px; }
+  /* スマホ：左にアイコン、右に文字、その下に導火線 */
+  .view-bar .join-hint { order: 3; flex: 1 1 100%; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 8px; align-items: center; border-radius: 14px; font-size: 11px; }
+  .view-bar .join-hint-icon { grid-row: 1 / span 2; }
+  .view-bar .join-hint-fuse { width: 100%; }
+}

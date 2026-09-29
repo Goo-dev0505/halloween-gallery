@@ -300,6 +300,10 @@
         ctx.cover();
         const ms = ctx.exit ? ctx.exit() : (overlay.classList.add('is-fading'), 1100);
         parts.forEach((node, i) => setTimeout(() => node.classList.add('fx-shown'), 250 + i * 130));
+        // 注釈を「もう一回開くと…」に差し替える
+        const hint = $('joinHintText'), icon = document.querySelector('.join-hint-icon');
+        if (hint) hint.textContent = 'ほかのページに行って戻ってくると、また別の何かが……？';
+        if (icon) icon.textContent = '👀';
         setTimeout(() => { overlay.remove(); parts.forEach(n => n.classList.remove('fx-hidden', 'fx-shown')); joinFx.running = null; },
           Math.max(ms, 250 + parts.length * 130) + 1000);
         removeEventListener('keydown', ctx.reveal);
@@ -410,9 +414,13 @@
   };
   function watchJoinFx() {
     if (reduced) return;
+    const hint = $('joinHint');
+    if (hint) hint.style.setProperty('--fuse', `${JOIN_FX_AFTER}ms`);
     const arm = () => {
       clearTimeout(joinFx.timer);
-      if (currentView() === 'join') joinFx.timer = setTimeout(startJoinFx, JOIN_FX_AFTER);
+      // 注釈の導火線：開くたびに最初から燃やし直す（燃え切る＝演出が始まる）
+      hint?.classList.remove('is-burning'); void hint?.offsetWidth;
+      if (currentView() === 'join') { hint?.classList.add('is-burning'); joinFx.timer = setTimeout(startJoinFx, JOIN_FX_AFTER); }
       else if (joinFx.running) joinFx.running.reveal();   // 演出中に別の画面へ移ったら、すぐ明かりを戻す
     };
     // app.js が body[data-view] を切り替えるたびに張り直す＝「開くたび」に1回

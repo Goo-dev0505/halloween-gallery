@@ -257,6 +257,13 @@
       <div class="view-bar">
         <div class="wrap view-bar-inner">
           <a class="view-back" href="#top">入口へ戻る</a>
+          <!-- 注釈：待つと演出が起きることをそれとなく伝える。上に貼り付く帯なので、どこまでスクロールしても見える。
+               導火線（fuse）が燃え切ると演出が始まる（fx.js） -->
+          <p class="join-hint" id="joinHint">
+            <span class="join-hint-icon" aria-hidden="true">👻</span>
+            <span id="joinHintText">このページ、しばらくじっと眺めてると……何か起こるらしい</span>
+            <span class="join-hint-fuse" aria-hidden="true"><span></span></span>
+          </p>
           <span class="view-count"><strong data-count-mirror>0</strong> <span data-count-label-mirror>人が参加しています</span></span>
         </div>
       </div>
