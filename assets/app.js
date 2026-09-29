@@ -9,7 +9,9 @@
   const config = typeof window !== 'undefined' ? (window.HALLOWEEN_CONFIG || {}) : {};
   const demoMode = config.demoMode === true;
   const state = { rows: [], order: [], filter: 'all', query: '', room: 'all', failed: false };
-  const carousel = { items: [], angle: 0, step: 0, radius: 0, frame: 0, last: 0, pauseUntil: 0, hovering: false, dragging: false, startX: 0, startAngle: 0, moved: false };
+  const SPIN_SECONDS = 24; // メリーゴーランドが1周する秒数
+  // playing：自動回転のオン／オフ。「動きを減らす」設定の人は止めた状態から始め、ボタンで回せる
+  const carousel = { items: [], angle: 0, step: 0, radius: 0, frame: 0, last: 0, pauseUntil: 0, hovering: false, focused: false, playing: !reduced, dragging: false, startX: 0, startAngle: 0, moved: false };
 
   function httpsUrl(value, host) {
     try {
@@ -345,11 +347,14 @@
       outer.classList.add('is-empty');
       if ($('carouselPrev')) $('carouselPrev').disabled = true;
       if ($('carouselNext')) $('carouselNext').disabled = true;
+      if ($('carouselToggle')) $('carouselToggle').disabled = true;
       return;
     }
     outer.classList.remove('is-empty');
     if ($('carouselPrev')) $('carouselPrev').disabled = false;
     if ($('carouselNext')) $('carouselNext').disabled = false;
+    if ($('carouselToggle')) $('carouselToggle').disabled = false;
+    syncCarouselToggle();
     const real = shuffle(state.rows).slice(0,12);
     const slots = carouselSlotCount(real.length);
     carousel.step = 360 / slots;
@@ -369,7 +374,7 @@
     ring.style.setProperty('--cw', innerWidth >= 768 ? '160px' : '128px');
     const stage = ring.closest('.stage'); if (stage) stage.style.height = `${270 + Math.min(80, carousel.radius / 8)}px`;
     paintCarousel();
-    if (!reduced) carousel.frame = requestAnimationFrame(tick);
+    carousel.frame = requestAnimationFrame(tick); // 回すかどうかは tick 側で判断する
   }
   function paintCarousel() {
     const ring = $('carouselRing'); if (!ring || !carousel.items.length) return;
@@ -384,10 +389,17 @@
   function tick(now) {
     const elapsed = carousel.last ? Math.min(64, now - carousel.last) : 16;
     carousel.last = now;
-    if (!carousel.dragging && !carousel.hovering && now > carousel.pauseUntil) carousel.angle += elapsed * (360 / 36000);
+    // カードにマウスが乗っている・キーボードで選んでいる・ドラッグ中・操作直後は回さない
+    if (carousel.playing && !carousel.dragging && !carousel.hovering && !carousel.focused && now > carousel.pauseUntil) carousel.angle += elapsed * (360 / (SPIN_SECONDS * 1000));
     paintCarousel(); carousel.frame = requestAnimationFrame(tick);
   }
   function pauseCarousel() { carousel.pauseUntil = performance.now() + 3000; }
+  function syncCarouselToggle() {
+    const button = $('carouselToggle'); if (!button) return;
+    button.textContent = carousel.playing ? '⏸ 止める' : '▶ 回す';
+    button.setAttribute('aria-label', carousel.playing ? 'メリーゴーランドの回転を止める' : 'メリーゴーランドを回す');
+    button.setAttribute('aria-pressed', String(!carousel.playing));
+  }
   function turnCarousel(direction) { if (!carousel.step) return; carousel.angle = Math.round(carousel.angle / carousel.step + direction) * carousel.step; paintCarousel(); pauseCarousel(); }
   function focusCard(node) {
     if (!node) return;
@@ -500,10 +512,14 @@
     });
     $('carouselPrev')?.addEventListener('click', () => turnCarousel(-1));
     $('carouselNext')?.addEventListener('click', () => turnCarousel(1));
+    $('carouselToggle')?.addEventListener('click', () => { carousel.playing = !carousel.playing; carousel.pauseUntil = 0; syncCarouselToggle(); });
     const stage = $('carouselRing')?.closest('.stage') || $('carousel');
     if (stage) {
-      stage.addEventListener('mouseenter', () => { carousel.hovering = true; });
-      stage.addEventListener('mouseleave', () => { carousel.hovering = false; pauseCarousel(); });
+      // 止めるのはカードの上にマウスがあるときだけ（床や余白の上では回り続ける）
+      stage.addEventListener('pointerover', e => { carousel.hovering = e.pointerType === 'mouse' && Boolean(e.target.closest('.cc .face.front:not(:empty)')) && !e.target.closest('.cc.dummy'); });
+      stage.addEventListener('mouseleave', () => { carousel.hovering = false; });
+      stage.addEventListener('focusin', e => { carousel.focused = Boolean(e.target.closest('.cc')); });
+      stage.addEventListener('focusout', () => { carousel.focused = false; });
       stage.addEventListener('pointerdown', e => { if (e.target.closest('button') && e.pointerType === 'mouse') return; carousel.dragging = true; carousel.moved = false; carousel.startX = e.clientX; carousel.startAngle = carousel.angle; stage.setPointerCapture?.(e.pointerId); });
       stage.addEventListener('pointermove', e => { if (!carousel.dragging) return; const delta = e.clientX - carousel.startX; if (Math.abs(delta) > 6) carousel.moved = true; carousel.angle = carousel.startAngle - delta * 0.35; paintCarousel(); });
       stage.addEventListener('pointerup', () => { carousel.dragging = false; pauseCarousel(); });
