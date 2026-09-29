@@ -285,7 +285,8 @@
     if (!r.demo) thumb.setAttribute('aria-label', `${r.article_title}をnoteで読む`);
     append(thumb, imageOrPlaceholder(r.thumb_url, `${r.name}『${r.article_title}』`, 'work-image', 382, 200));
     if (r.work_type === 'video' && !r.demo) append(thumb, el('span', 'play', '▶'));
-    const cap = el('div', 'cap'); append(cap, el('h3', '', r.article_title));
+    const title = el('h3', '', r.article_title); title.title = r.article_title; // 長いタイトルは3行で切るので、全文をツールチップで出す
+    const cap = el('div', 'cap'); append(cap, title);
     const author = el('button', 'by', r.name); author.type = 'button'; author.dataset.creatorId = r.id; append(cap, author);
     if (r.isNew) append(cap, badge());
     append(cap, append(el('div', 'actions'), r.demo ? el('span', 'act demo-pill', '架空の作品例') : link('記事を読む', r.article_url)));

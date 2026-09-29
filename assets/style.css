@@ -394,7 +394,7 @@ button.tag:hover { background: rgb(143 211 182 / 26%); }
 .frame .thumb:hover img { transform: scale(1.03); }
 .frame .play { position: absolute; inset: 0; margin: auto; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: rgb(15 10 26 / 70%); border: 1.5px solid var(--gold); color: var(--text); font-size: 18px; pointer-events: none; }
 .frame .cap { display: flex; flex-direction: column; flex: 1; padding: 12px 14px 14px; }
-.frame .cap h3 { font-family: var(--body); font-weight: 700; font-size: 15px; line-height: 1.5; margin: 0 0 4px; }
+.frame .cap h3 { font-family: var(--body); font-weight: 700; font-size: 15px; line-height: 1.5; margin: 0 0 4px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; } /* 長い記事タイトルは3行まで */
 .frame .by { display: inline-flex; align-items: center; align-self: flex-start; min-height: 44px; padding: 0; border: 0; background: none; color: var(--gold); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .frame .by:hover { color: var(--accent); }
 .frame .cap .badge-new { position: static; align-self: flex-start; margin-top: 6px; }
