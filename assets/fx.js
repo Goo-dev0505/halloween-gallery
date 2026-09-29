@@ -39,7 +39,12 @@
   function currentView() { return document.body.dataset.view || 'top'; }
   function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
   function shuffle(list) { const a = list.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-  function safeImage(url) { try { const u = new URL(url); return u.protocol === 'https:' ? u.href : ''; } catch { return ''; } }
+  // HTTPS の外部画像か、このサイトの assets/ 以下の画像だけを使う（app.js の imageUrl と同じ決まり）
+  function safeImage(url) {
+    const v = String(url || '').trim();
+    if (/^assets\/[A-Za-z0-9_\-/.]+\.(?:png|jpe?g|webp|gif|svg)$/i.test(v) && !v.includes('..')) return v;
+    try { const u = new URL(v); return u.protocol === 'https:' ? u.href : ''; } catch { return ''; }
+  }
   function storageGet(key) { try { return localStorage.getItem(key); } catch { return null; } }
   function storageSet(key, value) { try { localStorage.setItem(key, value); } catch { /* 保存できなくても演出は動く */ } }
   function go(hash) { if (location.hash === hash) window.dispatchEvent(new HashChangeEvent('hashchange')); else location.hash = hash; }

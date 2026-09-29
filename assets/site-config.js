@@ -31,10 +31,10 @@ window.HALLOWEEN_CONFIG = {
 それぞれが作ったものを持ってきて、
 「こんなん作ったで」って並べる場所。`,
   // 運営チーム：「この企画について」のメンバーカード、入口のクレジット行、フッターに表示
-  // role は '主催' / '運営'。icon は任意（空なら 🎃）
+  // role は '主催' / '運営'。icon は任意（空なら 🎃）。HTTPS の画像URLか、assets/icons/ に置いた画像
   team: [
     { role: '主催', name: 'KITAcore', url: 'https://note.com/ktcrs1107', icon: 'https://assets.st-note.com/production/uploads/images/229742136/75a87979bd25ec75d7a88eaf5feef751.png' },
-    { role: '運営', name: 'HONO', url: 'https://note.com/hospital_ph_hono', icon: 'https://assets.st-note.com/production/uploads/images/272512361/f7a70e3dee212ae80053ec5c58781d53.png' },
+    { role: '運営', name: 'HONO', url: 'https://note.com/hospital_ph_hono', icon: 'assets/icons/hono.webp' },
     { role: '運営', name: '考える赤柴', url: 'https://note.com/eager_thyme9842', icon: 'https://assets.st-note.com/production/uploads/images/287811001/profile_61bd215e791f673065ace52a3d904ebb.png?fit=bounds&format=jpeg&quality=85&width=330' },
     { role: '運営', name: 'はしゃも', url: 'https://note.com/hasyamo', icon: 'https://assets.st-note.com/production/uploads/images/293589917/6c9d4c9e754e63c7ce41a77331ff15a2.png' }
   ],

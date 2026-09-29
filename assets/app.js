@@ -25,6 +25,12 @@
       return url.href;
     } catch { return ''; }
   }
+  // 画像URL：HTTPS の外部画像か、このサイトに置いた画像（assets/ 以下、.. を含まない）だけを通す
+  function imageUrl(value) {
+    const v = String(value || '').trim();
+    if (/^assets\/[A-Za-z0-9_\-/.]+\.(?:png|jpe?g|webp|gif|svg)$/i.test(v) && !v.includes('..')) return v;
+    return httpsUrl(v);
+  }
   function validDate(value, now = Date.now()) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
     const date = new Date(value + 'T00:00:00+09:00');
@@ -64,13 +70,13 @@
       else if (!/^[A-Za-z0-9_-]+$/.test(r.note_id)) error = 'note_id が不正';
       else if (!['work','intro'].includes(r.entry_type)) error = 'entry_type が不正';
       else if (!validDate(r.added_at, now)) error = 'added_at が不正または未来日';
-      else if (r.icon_url && !httpsUrl(r.icon_url)) error = 'icon_url は HTTPS URL が必要';
+      else if (r.icon_url && !imageUrl(r.icon_url)) error = 'icon_url は HTTPS URL か assets/ の画像が必要';
       else if (r.intro_url && !httpsUrl(r.intro_url, 'note.com')) error = 'intro_url は HTTPS の note URL が必要';
       else if (r.entry_type === 'work') {
         if (!TYPES.has(r.work_type)) error = 'work_type が不正';
         else if (!httpsUrl(r.article_url, 'note.com')) error = 'article_url は HTTPS の note URL が必要';
         else if (!r.article_title) error = 'article_title が空';
-        else if (!httpsUrl(r.thumb_url)) error = 'thumb_url は HTTPS URL が必要';
+        else if (!imageUrl(r.thumb_url)) error = 'thumb_url は HTTPS URL か assets/ の画像が必要';
       }
       if (error) { logger.warn(`creators.csv ${line}行目: ${error}`); return; }
       seen.add(r.id);
@@ -81,7 +87,7 @@
     });
     return out;
   }
-  if (typeof module !== 'undefined' && module.exports) module.exports = { httpsUrl, validDate, validateRows, carouselSlotCount, eventPresentation, demoRows };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { httpsUrl, imageUrl, validDate, validateRows, carouselSlotCount, eventPresentation, demoRows };
   if (typeof document === 'undefined') return;
 
   function el(tag, className, text) {
@@ -220,7 +226,7 @@
       $('teamList')?.replaceChildren(...team.map(m => {
         const card = link('', httpsUrl(m.url, 'note.com'), 'member');
         card.setAttribute('aria-label', `${m.role || '運営'}・${m.name}のnoteプロフィール`);
-        const icon = httpsUrl(m.icon);
+        const icon = imageUrl(m.icon);
         append(card,
           icon ? imageOrPlaceholder(icon, '', 'avatar', 64, 64) : el('span', 'avatar image-placeholder', '🎃'),
           el('span', 'member-role' + (m.role === '主催' ? ' is-host' : ''), m.role || '運営'),
@@ -229,7 +235,7 @@
       }));
       $('sponsorList')?.replaceChildren(...sponsors.map(sp => {
         const card = link('', httpsUrl(sp.url), 'sponsor-card');
-        const media = el('span', 'sponsor-media'), image = httpsUrl(sp.image);
+        const media = el('span', 'sponsor-media'), image = imageUrl(sp.image);
         append(media, image ? imageOrPlaceholder(image, '', 'work-image', 216, 113) : el('span', 'sponsor-mark', '✦'));
         const body = append(el('span', 'sponsor-body'), el('span', 'sponsor-role', sp.role || '協賛'), el('span', 'sponsor-name', sp.name));
         if (sp.title) append(body, el('span', 'sponsor-title', sp.title));
