@@ -11,8 +11,9 @@
    6. Trick or Create …… ランダムに1作品へワープ
    7. 懐中電灯モード …… 美術館を消灯し、隠れおばけを探す
    8. 霧と墓地の奥行き … フッターの上。スクロールでゆっくりずれる
+   9. ブラックアウト …… 「参加する」をしばらく眺めると暗転し、中身が順に現れる
 
-   「動きを減らす」設定の人には、1・3・4 を出さず、霧と月は止めて表示する。
+   「動きを減らす」設定の人には、1・3・4・9 を出さず、霧と月は止めて表示する。
    ランタン・Trick or Create・懐中電灯は操作で動くので、そのまま使える。
    ========================================================================== */
 (function () {
@@ -255,6 +256,59 @@
     addEventListener('hashchange', () => { if (torch.on && !location.hash.startsWith('#gallery')) setTorch(false); });
   }
 
+  /* ---------- 9. 「参加する」でブラックアウト ----------
+     しばらく眺めていると電気がチカチカ→真っ暗に。暗闇に目が光ってひとこと言い、
+     明かりが戻ると中身が上から順にふわっと現れる。ページを開いて1回だけ。押すとすぐ戻る */
+  const BLACKOUT_AFTER = 10000;  // 「参加する」を開いてから暗くなるまで（ミリ秒）
+  const blackout = { timer: 0, done: false };
+  function joinParts() {
+    const view = document.querySelector('[data-view="join"]');
+    return view ? [...view.querySelectorAll('h2, .section-intro, .tool-panel, .steps > li, .exhibit, .links > *')] : [];
+  }
+  function runBlackout() {
+    if (blackout.done || currentView() !== 'join' || document.hidden || torch.on) return;
+    blackout.done = true;
+    try { sessionStorage.setItem('ha2026-blackout', '1'); } catch { /* 保存できなくても動く */ }
+    const parts = joinParts();
+    const overlay = el('div', 'blackout'); overlay.setAttribute('aria-hidden', 'true');
+    const eyes = el('div', 'blackout-eyes'); eyes.append(el('span'), el('span'));
+    const line1 = el('p', 'blackout-line', '……見てたやろ？');
+    const line2 = el('p', 'blackout-line', 'ほな、いっしょに遊ぼか。');
+    overlay.append(eyes, line1, line2);
+    document.body.append(overlay);
+    const timers = [];
+    const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+    let revealed = false;
+    // 明かりを戻し、中身を上から順に出す
+    const reveal = () => {
+      if (revealed) return; revealed = true;
+      timers.forEach(clearTimeout);
+      overlay.classList.add('is-fading');
+      parts.forEach((node, i) => setTimeout(() => node.classList.add('fx-shown'), 350 + i * 140));
+      setTimeout(() => { overlay.remove(); parts.forEach(n => n.classList.remove('fx-hidden', 'fx-shown')); }, 350 + parts.length * 140 + 1200);
+      removeEventListener('keydown', reveal);
+    };
+    requestAnimationFrame(() => overlay.classList.add('is-flicker'));   // 0〜1.1秒：チカチカ
+    at(1100, () => parts.forEach(n => n.classList.add('fx-hidden')));  // 真っ暗の裏で中身を隠す
+    at(1400, () => eyes.classList.add('is-on'));                        // 目が光る
+    at(1900, () => line1.classList.add('is-on'));
+    at(2900, () => line2.classList.add('is-on'));
+    at(4300, reveal);
+    overlay.addEventListener('click', reveal);
+    addEventListener('keydown', reveal);
+  }
+  function watchBlackout() {
+    if (reduced) return;
+    try { if (sessionStorage.getItem('ha2026-blackout')) blackout.done = true; } catch { /* 読めなくても動く */ }
+    const arm = () => {
+      clearTimeout(blackout.timer);
+      if (!blackout.done && currentView() === 'join') blackout.timer = setTimeout(runBlackout, BLACKOUT_AFTER);
+    };
+    // app.js が body[data-view] を切り替えたら、タイマーを張り直す
+    new MutationObserver(arm).observe(document.body, { attributes: true, attributeFilter: ['data-view'] });
+    arm();
+  }
+
   /* ---------- 8. 霧と墓地の奥行き ---------- */
   function initFog() {
     const scene = document.querySelector('.fog-scene'); if (!scene || reduced) return;
@@ -286,7 +340,7 @@
   document.addEventListener('halloween:data', e => onData(e.detail?.rows));
   let doorDone = Promise.resolve();
   function init() {
-    initMoon(); initLanterns(); initTrick(); initTorch(); initFog();
+    initMoon(); initLanterns(); initTrick(); initTorch(); initFog(); watchBlackout();
     doorDone = initDoor().then(releaseBats);
     if (window.__halloweenRows) onData(window.__halloweenRows); // app.js が先に読み終えていた場合
   }
