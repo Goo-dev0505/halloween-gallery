@@ -30,6 +30,7 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script defer src="assets/site-config.js?v=dev"></script>
   <script defer src="assets/app.js?v=dev"></script>
+  <script defer src="assets/fx.js?v=dev"></script>
 </head>
 <body>
   <div class="floaties" aria-hidden="true"><span>👻</span><span>🎃</span><span>🦇</span><span>👻</span></div>
@@ -133,6 +134,22 @@
 
     <div class="block doors-block">
       <div class="wrap">
+        <!-- ランタン飾り：ふれると灯る。全部灯すと Trick or Create が出る（fx.js） -->
+        <div class="garland" id="lanternGarland">
+          <svg class="garland-rope" viewBox="0 0 1000 60" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 6Q250 58 500 20T1000 6" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
+          <div class="lanterns" role="group" aria-label="ランタン飾り">
+            <button class="lantern" type="button" aria-pressed="false" aria-label="ランタン1を灯す"></button>
+            <button class="lantern" type="button" aria-pressed="false" aria-label="ランタン2を灯す"></button>
+            <button class="lantern" type="button" aria-pressed="false" aria-label="ランタン3を灯す"></button>
+            <button class="lantern" type="button" aria-pressed="false" aria-label="ランタン4を灯す"></button>
+            <button class="lantern" type="button" aria-pressed="false" aria-label="ランタン5を灯す"></button>
+          </div>
+          <p class="garland-hint" aria-live="polite">ランタンにふれて、灯りをともそう（<span id="lanternCount">0</span>/5）</p>
+          <div class="garland-reward" id="lanternReward" hidden>
+            <p>ぜんぶ灯った！ 今夜の1作品へご案内します。</p>
+            <button class="btn trick-btn" type="button" data-trick><span class="trick-icon" aria-hidden="true">🎃</span> Trick or Create</button>
+          </div>
+        </div>
         <nav class="doors" aria-label="展示室へ">
           <a class="door" href="#creators"><span class="door-icon" aria-hidden="true">🎠</span><span class="door-title">参加クリエイター</span><span class="door-note">メリーゴーランドで人に出会う</span></a>
           <a class="door" href="#gallery"><span class="door-icon" aria-hidden="true">🖼️</span><span class="door-title">夜の美術館</span><span class="door-note">額縁に並ぶ作品をめぐる</span></a>
@@ -206,6 +223,11 @@
       <div class="wrap">
         <h2 id="galleryTitle">夜の美術館</h2>
         <p class="section-intro">10月20日から31日まで、集まった作品を順次展示します。</p>
+        <!-- 美術館の遊び：ランダム1作品へ／消灯して懐中電灯で探検（fx.js） -->
+        <div class="hall-tools">
+          <button class="btn trick-btn" type="button" data-trick><span class="trick-icon" aria-hidden="true">🎃</span> Trick or Create<small>どれか1作品へワープ</small></button>
+          <button class="btn secondary" id="flashlightToggle" type="button" aria-pressed="false">🔦 消灯して探検</button>
+        </div>
         <h3 class="list-title">作品一覧</h3>
         <div class="seg room-tabs" id="galleryRooms" role="group" aria-label="作品の部屋を選ぶ">
           <button type="button" data-room="all" aria-pressed="true">すべて <span>0</span></button>
@@ -276,6 +298,18 @@
     </div>
   </main>
 
+  <!-- 霧と墓地の奥行き（全ページ共通・fx.js がスクロールに合わせてずらす） -->
+  <div class="fog-scene" aria-hidden="true">
+    <svg class="fog-far" viewBox="0 0 1200 160" preserveAspectRatio="xMidYMax slice" focusable="false">
+      <path d="M0 160V120q60-10 120 0t120-4q70-8 140 2t130-6q80-8 150 4t140-2q70-8 150 2t120-4q50-4 130 6V160Z"/>
+      <path d="M150 124V70q0-18 20-18t20 18v54zM240 124V84q0-14 15-14t15 14v40zM880 124V76q0-16 18-16t18 16v48zM960 124V90q0-12 13-12t13 12v34z"/>
+      <path d="M560 124V60h-8l30-26 30 26h-8v64zM576 124V96h12v28z"/>
+      <path d="M1082 124V74M1082 100l-20-18M1082 90l18-20M1068 86l-8-14M1096 76l10-8M1082 76l-4-16" fill="none" stroke="#0c0716" stroke-width="6" stroke-linecap="round"/>
+      <path d="M40 124l6-40 4 40zM70 124l4-30 4 30zM1120 124l5-36 5 36z"/>
+    </svg>
+    <div class="fog fog-back"></div>
+    <div class="fog fog-front"></div>
+  </div>
   <footer class="site-footer">
     <div class="wrap">
       <p>企画・主催：<span id="footerOrganizerName">主催者名 準備中</span></p>

@@ -550,6 +550,9 @@
     if (demoMode) replaceText('participantCountLabel', '人の仮クリエイターを表示中');
     mirrorCount();
     renderCreators(); renderWorks(); renderCarousel();
+    // fx.js（おばけ配達便・Trick or Create）へ参加者データを渡す
+    window.__halloweenRows = state.rows.slice();
+    document.dispatchEvent(new CustomEvent('halloween:data', { detail: { rows: window.__halloweenRows } }));
     applyRoute(); // 初回ロード：?id= / ?room= / #about などを描画後に反映
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once:true });

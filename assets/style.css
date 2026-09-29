@@ -96,7 +96,7 @@ main, .site-footer, .site-header, .demo-notice { position: relative; z-index: 1;
   padding: 56px 0 112px;
   overflow: hidden;
   background:
-    radial-gradient(circle at 84% 18%, rgb(244 163 64 / 22%) 0, rgb(244 163 64 / 8%) 9%, transparent 22%),
+    radial-gradient(circle at 84% 18%, rgb(244 163 64 / var(--moon-glow, 22%)) 0, rgb(244 163 64 / 8%) 9%, transparent 22%), /* 月の光：満ちるほど強く（fx.js） */
     radial-gradient(ellipse 120% 70% at 50% -10%, #3b1f6b 0%, transparent 60%);
 }
 /* 三日月：金の円を、背景色の円でくり抜く（mask） */
@@ -104,8 +104,9 @@ main, .site-footer, .site-header, .demo-notice { position: relative; z-index: 1;
   content: "";
   position: absolute; top: 9%; right: 8%; width: clamp(64px, 9vw, 110px); aspect-ratio: 1; border-radius: 50%;
   background: radial-gradient(circle at 40% 40%, #fff2c8, #f4c56a 60%, #d9b45b);
-  -webkit-mask: radial-gradient(circle at 68% 34%, transparent 0 46%, #000 48%);
-  mask: radial-gradient(circle at 68% 34%, transparent 0 46%, #000 48%);
+  /* くり抜きの円を右へずらすほど月が満ちる（--moon-cut は fx.js が開幕までの日数から決める） */
+  -webkit-mask: radial-gradient(circle at var(--moon-cut, 68%) 34%, transparent 0 46%, #000 48%);
+  mask: radial-gradient(circle at var(--moon-cut, 68%) 34%, transparent 0 46%, #000 48%);
   opacity: .95; pointer-events: none;
 }
 /* 星：1つの点を box-shadow で増やす。twinkle は opacity のみ */
@@ -601,3 +602,153 @@ body.is-switching::after {
 /* 参加方法：図解2枚。PCは横並び、スマホは縦に */
 .exhibit-pair { display: grid; gap: 24px; margin: 28px 0 8px; }
 @media (min-width: 700px) { .exhibit-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ==========================================================================
+   19. ハロウィンの仕掛け（fx.js と対）
+   いつも動く＝月・霧・おばけ（控えめ）／1回だけ＝扉・コウモリ／押すと動く＝ランタン・Trick・懐中電灯
+   ========================================================================== */
+
+/* --- 1. 扉の入場演出（初回だけ） --- */
+.door-intro {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; align-content: center; gap: 22px;
+  background: radial-gradient(ellipse at 50% 45%, #2b1b4a 0%, var(--bg-deep) 70%); cursor: pointer;
+  transition: opacity .5s ease;
+}
+.door-intro.is-leaving { opacity: 0; }
+.door-intro-text { order: -1; display: grid; gap: 4px; margin: 0; text-align: center; }
+.door-intro-small { color: var(--muted); font-size: 14px; letter-spacing: .1em; }
+.door-intro-title { font-family: var(--display); font-size: clamp(1.6rem, 6vw, 2.4rem); color: var(--accent); text-shadow: 0 0 22px rgb(244 163 64 / 55%); }
+.door-intro-frame {
+  position: relative; width: min(56vw, 240px); aspect-ratio: 2 / 3; overflow: hidden; perspective: 900px;
+  border: 8px double var(--gold); border-radius: 999px 999px 12px 12px;
+  background: radial-gradient(ellipse at 50% 60%, #ffd48a 0%, var(--accent) 30%, #6b2a10 75%); /* 扉の奥の灯り */
+  box-shadow: 0 0 60px rgb(244 163 64 / 35%);
+}
+.door-leaf {
+  position: absolute; top: 0; bottom: 0; width: 50%;
+  background: repeating-linear-gradient(90deg, #3b2a5e 0 14px, #33234f 14px 28px);
+  transition: transform 1.1s cubic-bezier(.6, .05, .3, 1) .5s;
+}
+.door-leaf.left { left: 0; transform-origin: left center; border-right: 1px solid var(--bg-deep); }
+.door-leaf.right { right: 0; transform-origin: right center; }
+.door-leaf::after { content: ""; position: absolute; top: 55%; width: 10px; height: 10px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 8px var(--accent); }
+.door-leaf.left::after { right: 10px; } .door-leaf.right::after { left: 10px; }
+.door-intro.is-open .door-leaf.left { transform: rotateY(-100deg); }
+.door-intro.is-open .door-leaf.right { transform: rotateY(100deg); }
+.door-intro-skip { margin: 0; color: var(--muted); font-size: 12px; opacity: .7; }
+
+/* --- 2. 満ちていく月：満月の日は少し脈打つ --- */
+.hero.is-full-moon::before { animation: moon-pulse 4s ease-in-out infinite; }
+@keyframes moon-pulse { 0%, 100% { filter: none; } 50% { filter: brightness(1.12); } }
+
+/* --- 3. コウモリの群れ（月から左上へ飛び去る） --- */
+.bat-flock { position: absolute; inset: 0; z-index: 2; overflow: hidden; pointer-events: none; }
+.bat {
+  position: absolute; top: 14%; right: 11%; width: var(--size, 28px); color: var(--bg-deep);
+  filter: drop-shadow(0 0 2px rgb(217 180 91 / 60%)); opacity: 0;
+  animation: bat-fly 2.8s cubic-bezier(.4, .1, .6, 1) forwards;
+}
+.bat svg { display: block; width: 100%; height: auto; fill: currentColor; animation: bat-flap .16s ease-in-out infinite alternate; transform-origin: center 40%; }
+@keyframes bat-fly { 0% { opacity: 0; transform: translate(0, 0) scale(.4); } 12% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1); } }
+@keyframes bat-flap { from { transform: scaleY(1); } to { transform: scaleY(.45); } }
+
+/* --- 4. おばけの配達便（参加者アイコンを抱えて横切る） --- */
+.courier-lane { position: absolute; inset: 0; z-index: 2; overflow: hidden; pointer-events: none; }
+.courier {
+  position: absolute; top: var(--y, 20%); left: 100%; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto;
+  animation: courier-fly var(--dur, 16s) linear forwards;
+}
+.courier:hover { animation-play-state: paused; }
+.courier-body { position: relative; display: block; width: 52px; animation: courier-bob 2.4s ease-in-out infinite alternate; }
+.courier-body svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 6px 10px rgb(15 10 26 / 55%)); }
+.gh-body { fill: #fff4e3; opacity: .92; } .gh-eye, .gh-mouth { fill: var(--on-accent); }
+.courier-parcel {
+  position: absolute; left: 50%; bottom: -8px; display: grid; place-items: center; width: 30px; height: 30px; overflow: hidden;
+  transform: translateX(-50%); border: 2px solid var(--gold); border-radius: 50%; background: var(--surface); font-size: 16px;
+}
+.courier-parcel img { width: 100%; height: 100%; object-fit: cover; }
+.courier-name {
+  position: absolute; bottom: calc(100% + 6px); left: 50%; padding: 3px 10px; transform: translateX(-50%);
+  border: 1px solid var(--gold-soft); border-radius: 999px; background: var(--surface); color: var(--text);
+  font-size: 12px; font-weight: 700; white-space: nowrap; opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+.courier:hover .courier-name, .courier:focus-visible .courier-name { opacity: 1; }
+@keyframes courier-fly { from { transform: translateX(0); } to { transform: translateX(calc(-100vw - 180px)); } }
+@keyframes courier-bob { from { transform: translateY(-6px) rotate(-4deg); } to { transform: translateY(6px) rotate(4deg); } }
+
+/* --- 5. ランタン飾り（入口の扉の上） --- */
+.garland { position: relative; max-width: 760px; margin: 0 auto 36px; padding-top: 4px; text-align: center; }
+.garland-rope { position: absolute; top: 0; left: 0; width: 100%; height: 44px; color: var(--gold-soft); }
+.lanterns { position: relative; display: flex; justify-content: space-around; }
+.lantern {
+  --h: 16px; position: relative; width: 60px; padding: var(--h) 0 0; border: 0; background: none; cursor: pointer;
+  transform-origin: 50% 0; animation: sway 4s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -.7s);
+}
+.lantern:nth-child(2) { --h: 30px; } .lantern:nth-child(3) { --h: 24px; } .lantern:nth-child(4) { --h: 18px; } .lantern:nth-child(5) { --h: 8px; } /* 縄のたるみに合わせる */
+.lantern::before { content: ""; position: absolute; top: 0; left: 50%; width: 2px; height: calc(var(--h) + 4px); background: var(--gold-soft); }
+.lantern svg { display: block; width: 100%; height: auto; transition: filter .3s; }
+.lantern .pk-stem { stroke: #6b8f3a; } .lantern .pk-body { fill: #4a2f52; } .lantern .pk-mid { fill: #573a60; } .lantern .pk-face { fill: #241532; }
+.lantern[aria-pressed="true"] .pk-body { fill: #e8650f; } .lantern[aria-pressed="true"] .pk-mid { fill: #ff9a36; } .lantern[aria-pressed="true"] .pk-face { fill: #ffe08a; }
+.lantern[aria-pressed="true"] svg { filter: drop-shadow(0 0 10px rgb(255 170 60 / 75%)); }
+.garland.is-complete .lantern svg { filter: drop-shadow(0 0 16px rgb(255 190 80 / 90%)); }
+.garland-hint { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
+.garland-hint span { color: var(--accent); font-family: var(--display); }
+.garland-reward { display: grid; justify-items: center; gap: 8px; margin-top: 12px; animation: reward-in .5s ease both; }
+.garland-reward[hidden] { display: none; }
+.garland-reward p { margin: 0; color: var(--text); font-weight: 700; }
+@keyframes reward-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.candy-burst { position: absolute; top: 40px; left: 50%; pointer-events: none; }
+.candy-burst span { position: absolute; font-size: 22px; animation: candy 1.2s ease-out forwards; }
+@keyframes candy { from { opacity: 1; transform: rotate(var(--a)) translateX(0) rotate(calc(var(--a) * -1)); } to { opacity: 0; transform: rotate(var(--a)) translateX(var(--r)) rotate(calc(var(--a) * -1)); } }
+
+/* --- 6. Trick or Create ボタン --- */
+.trick-btn { gap: 8px; }
+.trick-btn small { font-size: 11px; font-weight: 500; opacity: .8; }
+.trick-icon { display: inline-block; font-size: 1.15em; }
+.trick-btn.is-spinning .trick-icon { animation: trick-spin .65s ease-in-out; }
+@keyframes trick-spin { 0% { transform: rotate(0) scale(1); } 50% { transform: rotate(200deg) scale(1.4); } 100% { transform: rotate(360deg) scale(1); } }
+.hall-tools { display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 8px; }
+
+/* --- 7. 懐中電灯モード（美術館） --- */
+.torch-dark {
+  position: fixed; inset: 0; z-index: 45; pointer-events: none;
+  background: radial-gradient(circle 170px at var(--x, 50%) var(--y, 50%), rgb(8 5 16 / 0%) 0 45%, rgb(8 5 16 / 94%) 100%);
+}
+.torch-pill {
+  position: fixed; left: 50%; bottom: 16px; z-index: 46; display: flex; align-items: center; gap: 12px; max-width: calc(100% - 32px);
+  padding: 6px 6px 6px 16px; transform: translateX(-50%); border: 1px solid var(--gold-soft); border-radius: 999px;
+  background: var(--surface); box-shadow: var(--shadow); font-size: 14px; white-space: nowrap;
+}
+.torch-found { color: var(--accent); font-weight: 700; }
+.torch-pill .btn { min-height: 40px; padding: 6px 14px; font-size: 13px; }
+.hidden-ghost { position: absolute; z-index: 3; width: 42px; opacity: .45; pointer-events: none; transition: opacity .3s; }
+.hidden-ghost svg { display: block; width: 100%; height: auto; }
+.hidden-ghost .gh-body { fill: #e9e4ff; }
+.hidden-ghost.is-found { opacity: 1; animation: ghost-pop .6s ease; filter: drop-shadow(0 0 12px rgb(233 228 255 / 80%)); }
+@keyframes ghost-pop { 0% { transform: scale(.6); } 60% { transform: scale(1.25) translateY(-8px); } 100% { transform: none; } }
+body.is-torch .frame:nth-child(odd)::before { filter: drop-shadow(0 0 14px rgb(244 163 64 / 90%)); } /* 消灯中は吊りランタンが目立つ */
+
+/* --- 8. 霧と墓地の奥行き（フッターの上・全ページ） --- */
+.fog-scene {
+  position: relative; z-index: 1; height: clamp(110px, 15vw, 180px); overflow: hidden; pointer-events: none;
+  background: linear-gradient(180deg, transparent, var(--bg-deep) 92%);
+}
+.fog-far { position: absolute; left: 0; bottom: 0; width: 100%; height: 100%; fill: #0c0716; transform: translateY(calc((1 - var(--fog-t, .6)) * 16px)); }
+.fog { position: absolute; left: -10%; right: -10%; bottom: -10px; height: 75%; background-repeat: repeat-x; animation: fog-drift 60s linear infinite; }
+.fog-back {
+  background-image: radial-gradient(ellipse 22% 55% at 25% 75%, rgb(201 189 224 / 16%), transparent 70%), radial-gradient(ellipse 28% 50% at 75% 85%, rgb(201 189 224 / 12%), transparent 70%);
+  background-size: 900px 100%; transform: translateY(calc((1 - var(--fog-t, .6)) * 28px));
+}
+.fog-front {
+  height: 55%; animation-duration: 38s; animation-direction: reverse;
+  background-image: radial-gradient(ellipse 30% 60% at 40% 90%, rgb(233 228 255 / 14%), transparent 70%), radial-gradient(ellipse 24% 55% at 85% 95%, rgb(244 163 64 / 6%), transparent 70%);
+  background-size: 700px 100%; transform: translateY(calc((1 - var(--fog-t, .6)) * 44px));
+}
+@keyframes fog-drift { from { background-position-x: 0; } to { background-position-x: 900px; } }
+
+@media (max-width: 599px) {
+  .lantern { width: 46px; }
+  .garland { margin-bottom: 24px; }
+  .courier-body { width: 44px; }
+  .torch-pill { gap: 8px; font-size: 12px; }
+}
