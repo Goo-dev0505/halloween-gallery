@@ -11,7 +11,7 @@
    6. Trick or Create …… ランダムに1作品へワープ
    7. 懐中電灯モード …… 美術館を消灯し、隠れおばけを探す
    8. 霧と墓地の奥行き … フッターの上。スクロールでゆっくりずれる
-   9. ブラックアウト …… 「参加する」をしばらく眺めると暗転し、中身が順に現れる
+   9. 参加ページの演出 … 「参加する」を開くたびに6種類から1つ（暗転→中身が順に現れる）
 
    「動きを減らす」設定の人には、1・3・4・9 を出さず、霧と月は止めて表示する。
    ランタン・Trick or Create・懐中電灯は操作で動くので、そのまま使える。
@@ -256,55 +256,166 @@
     addEventListener('hashchange', () => { if (torch.on && !location.hash.startsWith('#gallery')) setTorch(false); });
   }
 
-  /* ---------- 9. 「参加する」でブラックアウト ----------
-     しばらく眺めていると電気がチカチカ→真っ暗に。暗闇に目が光ってひとこと言い、
-     明かりが戻ると中身が上から順にふわっと現れる。ページを開いて1回だけ。押すとすぐ戻る */
-  const BLACKOUT_AFTER = 10000;  // 「参加する」を開いてから暗くなるまで（ミリ秒）
-  const blackout = { timer: 0, done: false };
+  /* ---------- 9. 「参加する」を開くたびに違う演出 ----------
+     開いて JOIN_FX_AFTER ミリ秒たつと、6種類のうち1つが始まる。6種類を一巡するまで同じものは出ない。
+     どの演出も「画面が隠れる → 裏で中身を隠す → 明かりが戻る → 中身が上から順にふわっと出る」の流れ。
+     押すかキーを押すとすぐ明かりが戻る。 */
+  const JOIN_FX_AFTER = 6000;
+  const JOIN_FX_BAG = 'ha2026-join-fx-bag', JOIN_FX_LAST = 'ha2026-join-fx-last';
+  const joinFx = { timer: 0, running: null };
   function joinParts() {
     const view = document.querySelector('[data-view="join"]');
     return view ? [...view.querySelectorAll('h2, .section-intro, .tool-panel, .steps > li, .exhibit, .links > *')] : [];
   }
-  function runBlackout() {
-    if (blackout.done || currentView() !== 'join' || document.hidden || torch.on) return;
-    blackout.done = true;
-    try { sessionStorage.setItem('ha2026-blackout', '1'); } catch { /* 保存できなくても動く */ }
-    const parts = joinParts();
-    const overlay = el('div', 'blackout'); overlay.setAttribute('aria-hidden', 'true');
-    const eyes = el('div', 'blackout-eyes'); eyes.append(el('span'), el('span'));
-    const line1 = el('p', 'blackout-line', '……見てたやろ？');
-    const line2 = el('p', 'blackout-line', 'ほな、いっしょに遊ぼか。');
-    overlay.append(eyes, line1, line2);
-    document.body.append(overlay);
-    const timers = [];
-    const at = (ms, fn) => timers.push(setTimeout(fn, ms));
-    let revealed = false;
-    // 明かりを戻し、中身を上から順に出す
-    const reveal = () => {
-      if (revealed) return; revealed = true;
-      timers.forEach(clearTimeout);
-      overlay.classList.add('is-fading');
-      parts.forEach((node, i) => setTimeout(() => node.classList.add('fx-shown'), 350 + i * 140));
-      setTimeout(() => { overlay.remove(); parts.forEach(n => n.classList.remove('fx-hidden', 'fx-shown')); }, 350 + parts.length * 140 + 1200);
-      removeEventListener('keydown', reveal);
-    };
-    requestAnimationFrame(() => overlay.classList.add('is-flicker'));   // 0〜1.1秒：チカチカ
-    at(1100, () => parts.forEach(n => n.classList.add('fx-hidden')));  // 真っ暗の裏で中身を隠す
-    at(1400, () => eyes.classList.add('is-on'));                        // 目が光る
-    at(1900, () => line1.classList.add('is-on'));
-    at(2900, () => line2.classList.add('is-on'));
-    at(4300, reveal);
-    overlay.addEventListener('click', reveal);
-    addEventListener('keydown', reveal);
+  function sessionGet(key) { try { return sessionStorage.getItem(key); } catch { return null; } }
+  function sessionSet(key, value) { try { sessionStorage.setItem(key, value); } catch { /* 保存できなくても動く */ } }
+  // 次の演出を選ぶ：袋（まだ出ていない演出）から1つ取り出す。空なら詰め直す（直前と同じものは先頭にしない）
+  function nextJoinFx() {
+    const names = Object.keys(JOIN_FX);
+    let bag = []; try { bag = JSON.parse(sessionGet(JOIN_FX_BAG) || '[]').filter(n => names.includes(n)); } catch { bag = []; }
+    if (!bag.length) {
+      bag = shuffle(names);
+      const last = sessionGet(JOIN_FX_LAST);
+      if (bag.length > 1 && bag[0] === last) bag.push(bag.shift());
+    }
+    const name = bag.shift();
+    sessionSet(JOIN_FX_BAG, JSON.stringify(bag)); sessionSet(JOIN_FX_LAST, name);
+    return name;
   }
-  function watchBlackout() {
-    if (reduced) return;
-    try { if (sessionStorage.getItem('ha2026-blackout')) blackout.done = true; } catch { /* 読めなくても動く */ }
-    const arm = () => {
-      clearTimeout(blackout.timer);
-      if (!blackout.done && currentView() === 'join') blackout.timer = setTimeout(runBlackout, BLACKOUT_AFTER);
+  function startJoinFx() {
+    if (joinFx.running || currentView() !== 'join' || document.hidden || torch.on) return;
+    const name = nextJoinFx();
+    const parts = joinParts();
+    const overlay = el('div', `jfx jfx-${name}`); overlay.setAttribute('aria-hidden', 'true');
+    document.body.append(overlay);
+    const ctx = {
+      overlay, timers: [], frames: [], done: false,
+      at(ms, fn) { this.timers.push(setTimeout(fn, ms)); },
+      raf(fn) { const id = requestAnimationFrame(fn); this.frames.push(id); return id; },
+      cover() { parts.forEach(n => n.classList.add('fx-hidden')); },          // 画面が隠れた瞬間に中身を隠す
+      exit: null,                                                            // 演出ごとの「明かりの戻し方」（戻り値＝かかるミリ秒）
+      reveal() {
+        if (ctx.done) return; ctx.done = true;
+        ctx.timers.forEach(clearTimeout); ctx.frames.forEach(cancelAnimationFrame);
+        ctx.cover();
+        const ms = ctx.exit ? ctx.exit() : (overlay.classList.add('is-fading'), 1100);
+        parts.forEach((node, i) => setTimeout(() => node.classList.add('fx-shown'), 250 + i * 130));
+        setTimeout(() => { overlay.remove(); parts.forEach(n => n.classList.remove('fx-hidden', 'fx-shown')); joinFx.running = null; },
+          Math.max(ms, 250 + parts.length * 130) + 1000);
+        removeEventListener('keydown', ctx.reveal);
+      }
     };
-    // app.js が body[data-view] を切り替えたら、タイマーを張り直す
+    ctx.reveal = ctx.reveal.bind(ctx);
+    joinFx.running = ctx;
+    overlay.addEventListener('click', ctx.reveal);
+    addEventListener('keydown', ctx.reveal);
+    JOIN_FX[name](ctx);
+  }
+  function line(text, extra = '') { return el('p', `jfx-line ${extra}`.trim(), text); }
+  const JOIN_FX = {
+    // 1. 目が光る：チカチカ→真っ暗→目とセリフ
+    eyes(c) {
+      const eyes = el('div', 'jfx-eyepair'); eyes.append(el('span'), el('span'));
+      const l1 = line('……見てたやろ？'), l2 = line('ほな、いっしょに遊ぼか。', 'is-accent');
+      c.overlay.append(eyes, l1, l2);
+      c.raf(() => c.overlay.classList.add('is-flicker'));
+      c.at(1100, () => c.cover());
+      c.at(1400, () => eyes.classList.add('is-on'));
+      c.at(1900, () => l1.classList.add('is-on'));
+      c.at(2900, () => l2.classList.add('is-on'));
+      c.at(4300, c.reveal);
+    },
+    // 2. 停電とろうそく：暗くなってろうそくが灯り、光の輪が広がって明るくなる
+    candle(c) {
+      const candle = el('div', 'jfx-candlestick'); candle.append(el('span', 'flame'), el('span', 'wax'));
+      const l1 = line('……停電や。'), l2 = line('ろうそく、つけるで。', 'is-accent');
+      c.overlay.append(candle, l1, l2);
+      c.raf(() => c.overlay.classList.add('is-on'));
+      c.at(700, () => c.cover());
+      c.at(900, () => l1.classList.add('is-on'));
+      c.at(1700, () => { candle.classList.add('is-lit'); l2.classList.add('is-on'); });
+      c.at(3400, c.reveal);
+      c.exit = () => {
+        c.overlay.classList.add('is-spreading');
+        const max = Math.hypot(innerWidth, innerHeight), start = performance.now();
+        const grow = now => {
+          const t = Math.min(1, (now - start) / 1400);
+          c.overlay.style.setProperty('--r', `${Math.round(max * t * t)}px`);
+          if (t < 1) requestAnimationFrame(grow);
+        };
+        requestAnimationFrame(grow);
+        return 1400;
+      };
+    },
+    // 3. おばけの幕：巨大おばけが黒い幕を引いて通り、「ばあ！」、幕を右へ持ち去る
+    ghost(c) {
+      const sheet = el('div', 'jfx-sheet');
+      const ghost = el('span', 'jfx-bigghost'); ghost.append(svg(GHOST));
+      sheet.append(ghost);
+      const boo = line('ばあ！', 'is-big');
+      c.overlay.append(sheet, boo);
+      c.raf(() => c.raf(() => sheet.classList.add('is-in')));
+      c.at(1000, () => c.cover());
+      c.at(1150, () => boo.classList.add('is-on'));
+      c.at(2700, c.reveal);
+      c.exit = () => { boo.classList.remove('is-on'); sheet.classList.add('is-out'); return 1100; };
+    },
+    // 4. コウモリの大群：画面いっぱいにコウモリが横切って暗くなる
+    bats(c) {
+      const swarm = el('div', 'jfx-swarm');
+      for (let i = 0; i < 46; i++) {
+        const bat = el('span', 'jfx-bat'); bat.append(svg(BAT));
+        bat.style.top = `${Math.random() * 96}%`;
+        bat.style.setProperty('--size', `${26 + Math.random() * 46}px`);
+        bat.style.animationDelay = `${Math.random() * 1.4}s`;
+        bat.style.animationDuration = `${1.3 + Math.random() * 1.1}s`;
+        swarm.append(bat);
+      }
+      const l1 = line('コウモリの大群や！！', 'is-accent');
+      c.overlay.append(swarm, l1);
+      c.raf(() => c.overlay.classList.add('is-on'));
+      c.at(800, () => { c.cover(); l1.classList.add('is-on'); });
+      c.at(3300, c.reveal);
+    },
+    // 5. かぼちゃ大王：巨大ジャック・オ・ランタンが灯り、弾けて消える
+    pumpkin(c) {
+      const king = el('span', 'jfx-king'); king.append(svg(PUMPKIN));
+      const l1 = line('トリック・オア・クリエイト！', 'is-accent');
+      c.overlay.append(king, l1);
+      c.raf(() => c.overlay.classList.add('is-on'));
+      c.at(600, () => c.cover());
+      c.at(700, () => king.classList.add('is-lit'));
+      c.at(1500, () => l1.classList.add('is-on'));
+      c.at(3300, c.reveal);
+      c.exit = () => { king.classList.add('is-burst'); l1.classList.remove('is-on'); c.overlay.classList.add('is-fading'); return 1100; };
+    },
+    // 6. ハロウィン放送局：砂嵐→受信→ブラウン管が消えるように閉じる
+    tv(c) {
+      const canvas = el('canvas', 'jfx-noise'); canvas.width = 160; canvas.height = 90;
+      const g = canvas.getContext('2d'), img = g.createImageData(160, 90);
+      const noise = () => {                                  // 砂嵐：低解像度のランダムな灰色を毎フレーム描く
+        for (let i = 0; i < img.data.length; i += 4) { const v = Math.random() * 255 | 0; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; }
+        g.putImageData(img, 0, 0); c.raf(noise);
+      };
+      const l1 = line('📺 ハロウィン放送局、受信中……'), l2 = line('……受信完了。はじまるで。', 'is-accent');
+      c.overlay.append(canvas, el('div', 'jfx-scan'), l1, l2);
+      noise();
+      c.raf(() => c.overlay.classList.add('is-on'));
+      c.at(250, () => c.cover());
+      c.at(500, () => l1.classList.add('is-on'));
+      c.at(2000, () => { l1.classList.remove('is-on'); l2.classList.add('is-on'); c.overlay.classList.add('is-tuned'); });
+      c.at(3300, c.reveal);
+      c.exit = () => { c.overlay.classList.add('is-off'); return 700; };
+    }
+  };
+  function watchJoinFx() {
+    if (reduced) return;
+    const arm = () => {
+      clearTimeout(joinFx.timer);
+      if (currentView() === 'join') joinFx.timer = setTimeout(startJoinFx, JOIN_FX_AFTER);
+      else if (joinFx.running) joinFx.running.reveal();   // 演出中に別の画面へ移ったら、すぐ明かりを戻す
+    };
+    // app.js が body[data-view] を切り替えるたびに張り直す＝「開くたび」に1回
     new MutationObserver(arm).observe(document.body, { attributes: true, attributeFilter: ['data-view'] });
     arm();
   }
@@ -340,7 +451,7 @@
   document.addEventListener('halloween:data', e => onData(e.detail?.rows));
   let doorDone = Promise.resolve();
   function init() {
-    initMoon(); initLanterns(); initTrick(); initTorch(); initFog(); watchBlackout();
+    initMoon(); initLanterns(); initTrick(); initTorch(); initFog(); watchJoinFx();
     doorDone = initDoor().then(releaseBats);
     if (window.__halloweenRows) onData(window.__halloweenRows); // app.js が先に読み終えていた場合
   }
