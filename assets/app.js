@@ -12,10 +12,9 @@
   const SPIN_SECONDS = 24; // メリーゴーランドが1周する秒数
   // playing：自動回転のオン／オフ。「動きを減らす」設定の人は止めた状態から始め、ボタンで回せる
   const carousel = { items: [], angle: 0, step: 0, radius: 0, frame: 0, last: 0, pauseUntil: 0, hovering: false, focused: false, playing: !reduced, dragging: false, startX: 0, startAngle: 0, moved: false, turbo: 0, brake: null };
-  /* 高速回転ルーレット：押すたびに速くなり、最後の「ブレーキ！」でだれか1人の前に止まる
-     TURBO[n] = 通常速度の何倍か／ラベルは「次に押すと何が起きるか」 */
+  /* 高速回転ルーレット：速さボタン（ふつう／速い／めっちゃ速い／爆速）で選び、
+     「ブレーキ」でだれか1人の前に止まる。TURBO[n] = 通常速度の何倍か */
   const TURBO = [1, 6, 18, 60];
-  const TURBO_LABELS = ['🌀 高速で回す', '🌪 もっと速く', '💫 めっちゃ速く', '🛑 ブレーキ！'];
   const BRAKE_MS = 2800; // ブレーキをかけてから止まるまで
 
   function httpsUrl(value, host) {
@@ -354,14 +353,15 @@
       if ($('carouselPrev')) $('carouselPrev').disabled = true;
       if ($('carouselNext')) $('carouselNext').disabled = true;
       if ($('carouselToggle')) $('carouselToggle').disabled = true;
-      if ($('carouselTurbo')) $('carouselTurbo').disabled = true;
+      if ($('carouselBrake')) $('carouselBrake').disabled = true;
+      $('carouselSpeeds')?.querySelectorAll('button').forEach(b => { b.disabled = true; });
       return;
     }
     outer.classList.remove('is-empty');
     if ($('carouselPrev')) $('carouselPrev').disabled = false;
     if ($('carouselNext')) $('carouselNext').disabled = false;
     if ($('carouselToggle')) $('carouselToggle').disabled = false;
-    if ($('carouselTurbo')) $('carouselTurbo').disabled = false;
+    $('carouselSpeeds')?.querySelectorAll('button').forEach(b => { b.disabled = false; });
     syncCarouselToggle();
     const real = shuffle(state.rows).slice(0,12);
     const slots = carouselSlotCount(real.length);
@@ -423,11 +423,12 @@
     stage?.classList.remove('turbo-1', 'turbo-2', 'turbo-3', 'is-braking');
     if (carousel.turbo > 0) stage?.classList.add(`turbo-${carousel.turbo}`);
     if (carousel.brake) stage?.classList.add('is-braking');
-    const button = $('carouselTurbo');
-    if (button) {
-      button.textContent = carousel.brake ? '…止まるまで待ってな' : TURBO_LABELS[carousel.turbo];
-      button.disabled = Boolean(carousel.brake) || !state.rows.length;
-      button.classList.toggle('is-hot', carousel.turbo >= 2);
+    $('carouselSpeeds')?.querySelectorAll('[data-speed]').forEach(b => b.setAttribute('aria-pressed', String(!carousel.brake && Number(b.dataset.speed) === carousel.turbo)));
+    const brake = $('carouselBrake');
+    if (brake) {
+      brake.textContent = carousel.brake ? '…止まるまで待ってな' : '🛑 ブレーキ';
+      brake.disabled = Boolean(carousel.brake) || !state.rows.length;
+      brake.classList.toggle('is-hot', carousel.turbo >= 2);
     }
   }
   function resetTurbo() { carousel.turbo = 0; carousel.brake = null; setTurboClass(); }
@@ -456,14 +457,25 @@
     box.replaceChildren(el('span', 'spin-result-text', `🎃 ${r.name} さんに止まった！`), go);
     box.hidden = false;
   }
-  function pressTurbo() {
-    if (carousel.brake || !carousel.items.length) return;
+  function clearSpinResult() {
     $('spinResult')?.setAttribute('hidden', '');
     carousel.items.forEach(item => item.classList.remove('is-winner'));
-    // 動きを減らす設定の人は、回さずにその場でだれか1人を選ぶ
-    if (reduced) { carousel.turbo = 0; brakeTurbo(); if (carousel.brake) landTurbo(); paintCarousel(); return; }
-    if (carousel.turbo >= TURBO.length - 1) brakeTurbo();
-    else { carousel.turbo += 1; setTurboClass(); }
+  }
+  // 速さボタン：押した速さでそのまま回る（ふつう＝通常の自動回転に戻す）
+  function setSpeed(level) {
+    if (carousel.brake || !carousel.items.length) return;
+    clearSpinResult();
+    carousel.turbo = Math.max(0, Math.min(TURBO.length - 1, level));
+    carousel.pauseUntil = 0;
+    setTurboClass();
+  }
+  // ブレーキ：どの速さからでも押せる。動きを減らす設定の人は回さずにその場で1人を選ぶ
+  function pressBrake() {
+    if (carousel.brake || !carousel.items.length) return;
+    clearSpinResult();
+    brakeTurbo();
+    if (reduced && carousel.brake) landTurbo();
+    paintCarousel();
   }
   function turnCarousel(direction) { if (!carousel.step) return; carousel.angle = Math.round(carousel.angle / carousel.step + direction) * carousel.step; paintCarousel(); pauseCarousel(); }
   function focusCard(node) {
@@ -578,7 +590,8 @@
     $('carouselPrev')?.addEventListener('click', () => turnCarousel(-1));
     $('carouselNext')?.addEventListener('click', () => turnCarousel(1));
     $('carouselToggle')?.addEventListener('click', () => { carousel.playing = !carousel.playing; carousel.pauseUntil = 0; syncCarouselToggle(); });
-    $('carouselTurbo')?.addEventListener('click', pressTurbo);
+    $('carouselSpeeds')?.addEventListener('click', e => { const b = e.target.closest('[data-speed]'); if (b && !b.disabled) setSpeed(Number(b.dataset.speed)); });
+    $('carouselBrake')?.addEventListener('click', pressBrake);
     const stage = $('carouselRing')?.closest('.stage') || $('carousel');
     if (stage) {
       // 止めるのはカードの上にマウスがあるときだけ（床や余白の上では回り続ける）
