@@ -379,6 +379,7 @@
       return item;
     }));
     carousel.items = [...ring.children];
+    carousel.items.forEach(paintSpinBadge); // これまでに止まった回数のバッジ
     ring.style.setProperty('--cw', innerWidth >= 768 ? '160px' : '128px');
     const stage = ring.closest('.stage'); if (stage) stage.style.height = `${270 + Math.min(80, carousel.radius / 8)}px`;
     paintCarousel();
@@ -449,12 +450,78 @@
     carousel.pauseUntil = performance.now() + 5000; // 止まった人をしばらく見せる
     setTurboClass(); showSpinResult(b.id, b.index);
   }
+  /* ---------- ルーレットの記録：だれに何回止まったか（閲覧者のブラウザに保存） ---------- */
+  const SPIN_KEY = 'ha2026-spin-log';
+  const spinLog = (() => {
+    try { const v = JSON.parse(localStorage.getItem(SPIN_KEY) || '{}'); return { counts: v.counts || {}, total: v.total || 0, last: v.last || '', streak: v.streak || 0 }; }
+    catch { return { counts: {}, total: 0, last: '', streak: 0 }; }
+  })();
+  function saveSpinLog() { try { localStorage.setItem(SPIN_KEY, JSON.stringify(spinLog)); } catch { /* 保存できなくても遊べる */ } }
+  function recordSpin(id) {
+    spinLog.total += 1;
+    spinLog.counts[id] = (spinLog.counts[id] || 0) + 1;
+    spinLog.streak = spinLog.last === id ? spinLog.streak + 1 : 1;
+    spinLog.last = id;
+    saveSpinLog();
+    return { count: spinLog.counts[id], streak: spinLog.streak, total: spinLog.total };
+  }
+  // 回数と連続回数からセリフと演出の種類を決める（上ほど優先）
+  function spinMessage(name, count, streak) {
+    if (streak >= 3) return { level: 'streak', text: `🌀 ${name}さん、${streak}連続！！ 仕込んでへんで……？` };
+    if (count >= 10) return { level: 'king', text: `👑 ${count}回目の${name}さん。殿堂入りや。` };
+    if (count >= 7) return { level: 'follow', text: `🫣 ${count}回目。もう${name}さんのnote、見に行ってきたら？` };
+    if (count >= 5) return { level: 'love', text: `💘 ${count}回目の${name}さん。……好きすぎやろ。` };
+    if (streak === 2) return { level: 'streak', text: `‼ ${name}さん、2回連続！？` };
+    if (count >= 3) return { level: 'fate', text: `👀 ${name}さん、${count}回目……運命かもしれん。` };
+    if (count === 2) return { level: 'again', text: `🎃 また${name}さん！ 2回目や。` };
+    return { level: 'first', text: `🎃 ${name}さんに止まった！` };
+  }
+  // カード右上の回数バッジ（2回以上）と、10回以上の王冠
+  function paintSpinBadge(item) {
+    const id = item.querySelector('[data-creator-id]')?.dataset.creatorId; if (!id) return;
+    const n = spinLog.counts[id] || 0;
+    item.querySelector('.spin-badge')?.remove();
+    item.classList.toggle('is-king', n >= 10);
+    if (n >= 2) item.querySelector('.face.front')?.append(el('span', 'spin-badge', n >= 10 ? `👑×${n}` : `×${n}`));
+  }
+  function burst(item, chars) {
+    if (reduced || !item) return;
+    const box = el('span', 'spin-burst'); box.setAttribute('aria-hidden', 'true');
+    chars.forEach((c, i) => {
+      const s = el('span', '', c);
+      s.style.setProperty('--a', `${i * (360 / chars.length) + Math.random() * 20}deg`);
+      s.style.setProperty('--r', `${70 + Math.random() * 50}px`);
+      box.append(s);
+    });
+    item.append(box);
+    setTimeout(() => box.remove(), 1500);
+  }
   function showSpinResult(id, index) {
     const r = state.rows.find(row => row.id === id), box = $('spinResult');
     carousel.items.forEach((item, i) => item.classList.toggle('is-winner', i === index));
     if (!r || !box) return;
+    const { count, streak, total } = recordSpin(id);
+    const msg = spinMessage(r.name, count, streak);
+    const item = carousel.items[index];
+    paintSpinBadge(item);
+    // 演出：好きすぎ＝ハート、殿堂入り＝王冠＋紙吹雪、連続＝舞台が揺れる
+    if (msg.level === 'love' || msg.level === 'follow') burst(item, ['💘', '💕', '💗', '💘', '💞', '💕']);
+    if (msg.level === 'king') burst(item, ['👑', '✨', '🎉', '✨', '👑', '🎉']);
+    if (msg.level === 'streak' && !reduced) {
+      const stage = $('carouselRing')?.closest('.stage');
+      stage?.classList.remove('is-jolt'); void stage?.offsetWidth; stage?.classList.add('is-jolt');
+    }
     const go = el('button', 'act hot', 'カードを見る'); go.type = 'button'; go.dataset.creatorId = r.id;
-    box.replaceChildren(el('span', 'spin-result-text', `🎃 ${r.name} さんに止まった！`), go);
+    const actions = append(el('span', 'spin-result-actions'), go);
+    if (msg.level === 'follow' || msg.level === 'king') append(actions, link('noteを見る', r.profile));
+    const meta = el('span', 'spin-result-meta', `通算${total}回目のブレーキ`);
+    const reset = el('button', 'spin-reset', '記録を消す'); reset.type = 'button';
+    reset.addEventListener('click', () => {
+      spinLog.counts = {}; spinLog.total = 0; spinLog.last = ''; spinLog.streak = 0; saveSpinLog();
+      carousel.items.forEach(paintSpinBadge); clearSpinResult();
+    });
+    box.className = `spin-result is-${msg.level}`;
+    box.replaceChildren(el('span', 'spin-result-text', msg.text), actions, append(el('span', 'spin-result-foot'), meta, reset));
     box.hidden = false;
   }
   function clearSpinResult() {

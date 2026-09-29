@@ -874,3 +874,23 @@ body.is-torch .frame:nth-child(odd)::before { filter: drop-shadow(0 0 14px rgb(2
   .view-bar .join-hint-icon { grid-row: 1 / span 2; }
   .view-bar .join-hint-fuse { width: 100%; }
 }
+
+/* ---------- 23. ルーレットの記録（止まった回数・連続・好きすぎ） ---------- */
+.cc .face.front { position: absolute; }
+.spin-badge { position: absolute; top: 6px; right: 6px; padding: 1px 7px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-family: var(--display); font-size: 11px; line-height: 1.5; box-shadow: 0 2px 6px rgb(15 10 26 / 45%); }
+.cc.is-king .face.front { border-color: #ffd54a; box-shadow: 0 0 0 2px #ffd54a, 0 0 22px rgb(255 213 74 / 45%); }
+.cc.is-king .face.front::before { content: "👑"; position: absolute; top: -18px; left: 50%; transform: translateX(-50%) rotate(-8deg); font-size: 26px; filter: drop-shadow(0 2px 4px rgb(15 10 26 / 60%)); }
+.spin-burst { position: absolute; top: 40%; left: 50%; z-index: 5; pointer-events: none; }
+.spin-burst span { position: absolute; font-size: 24px; animation: candy 1.3s ease-out forwards; }
+.stage.is-jolt { animation: stage-jolt .5s ease; }
+@keyframes stage-jolt { 0%, 100% { transform: none; } 15% { transform: translate(-6px, 2px) rotate(-1deg); } 35% { transform: translate(6px, -2px) rotate(1deg); } 55% { transform: translate(-4px, 1px); } 75% { transform: translate(3px, 0); } }
+.spin-result { flex-direction: column; gap: 6px; padding: 10px 18px; border-radius: 18px; text-align: center; }
+.spin-result-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.spin-result-foot { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 11px; }
+.spin-reset { padding: 0; border: 0; background: none; color: var(--muted); font-size: 11px; text-decoration: underline; cursor: pointer; }
+.spin-reset:hover { color: var(--accent); }
+.spin-result.is-love, .spin-result.is-follow { border-color: #ff7fa8; box-shadow: 0 0 24px rgb(255 127 168 / 30%); }
+.spin-result.is-love .spin-result-text, .spin-result.is-follow .spin-result-text { color: #ffb3c9; }
+.spin-result.is-king { border-color: #ffd54a; box-shadow: 0 0 24px rgb(255 213 74 / 35%); }
+.spin-result.is-king .spin-result-text { color: #ffe08a; }
+.spin-result.is-streak .spin-result-text { color: var(--accent); }
