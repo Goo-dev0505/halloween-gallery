@@ -43,14 +43,14 @@ window.HALLOWEEN_CONFIG = {
     { role: '協賛', name: 'ChatGPTCreativeClub（CCC）', title: 'ChatGPTCreativeClub【共同マガジン】', url: 'https://note.com/nenkoro2/m/m38c6d06537bf', image: 'https://assets.st-note.com/production/uploads/images/271978075/293f6ccb3762be3fc835c5333ee9446b.png?width=432&dpr=2' }
   ],
   announcementUrl: 'https://note.com/ktcrs1107/n/n397fe2a90d5c',
-  launchArticleUrl: '',
+  launchArticleUrl: 'https://note.com/ktcrs1107/n/n01b002ed9e6e',
   // 正式参加の受付期間（入口の「受付中」バッジはこの間だけ出る）
   entryPeriod: { start: '2026-10-01T00:00:00+09:00', end: '2026-10-06T23:59:00+09:00' },
   // 共通ハッシュタグ
   hashtag: '#ハロウィンアート2026',
   // 「参加します！」とコメントする3記事。url が空の間は「リンク準備中」と表示する
   entryArticles: [
-    { name: 'KITAcore', url: '' },
+    { name: 'KITAcore', url: 'https://note.com/ktcrs1107/n/n01b002ed9e6e' },
     { name: 'HONO', url: '' },
     { name: '考える赤柴', url: '' }
   ],
