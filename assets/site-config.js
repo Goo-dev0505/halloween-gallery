@@ -35,7 +35,7 @@ window.HALLOWEEN_CONFIG = {
   team: [
     { role: '主催', name: 'KITAcore', url: 'https://note.com/ktcrs1107', icon: 'https://assets.st-note.com/production/uploads/images/229742136/75a87979bd25ec75d7a88eaf5feef751.png' },
     { role: '運営', name: 'HONO', url: 'https://note.com/hospital_ph_hono', icon: 'assets/icons/hono-halloween.webp' },
-    { role: '運営', name: '考える赤柴', url: 'https://note.com/eager_thyme9842', icon: 'https://assets.st-note.com/production/uploads/images/287811001/profile_61bd215e791f673065ace52a3d904ebb.png?fit=bounds&format=jpeg&quality=85&width=330' },
+    { role: '運営', name: '考える赤柴', url: 'https://note.com/eager_thyme9842', icon: 'assets/icons/akashiba-halloween.webp' },
     { role: '運営', name: 'はしゃも', url: 'https://note.com/hasyamo', icon: 'assets/icons/hasyamo-halloween.webp' }
   ],
   // 協賛：「この企画について」の協賛カード、入口のクレジット行、フッターに表示
