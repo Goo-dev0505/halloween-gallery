@@ -1,69 +1,164 @@
-# ハロウィン展示企画 特設サイト
+# ハロウィンアート2026 特設サイト
 
-note クリエイター参加型のハロウィン展示サイト。作品の本文・動画は note に置き、このサイトはクリエイターと作品への案内所として機能します。
+note クリエイター参加型のオンライン展示会「ハロウィンアート2026」の特設サイトです。作品の本文・動画は各自の note 記事に置き、このサイトはクリエイターと作品への案内所として機能します。
 
-**状態:** ローカル制作版。企画名、主催者素材、開催日時、記事・マガジン・ツール URL は未確定です。公開前に [SPEC.md](./SPEC.md) の未決事項を確認してください。
+> 作品を入口に、人へ会いにいく展示会。
 
-現在は `assets/site-config.js` の `demoMode: true` で、架空のクリエイター6人と作品4点を表示します。ブラウザで `index.html` を直接開いてもデモ表示できます。デモのカウントダウンはページを開いた時点から7日で、実際の開催日ではありません。公開前に `demoMode: false` にし、承認済みの実参加者を `creators.csv` に入れてください。
+- 公開サイト: https://goo-dev0505.github.io/halloween-gallery/
+- 告知記事: https://note.com/ktcrs1107/n/n397fe2a90d5c
+- 主催: KITAcore（note: [ktcrs1107](https://note.com/ktcrs1107)）
+- 運営: HONO・考える赤柴・はしゃも
+- 協賛: ChatGPTCreativeClub（CCC）共同マガジン
+
+## 現在の状態（2026-09-30）
+
+- **公開中（予告版）**。`phase: 'preview'`、`demoMode: false` で実データを表示しています。
+- 参加者は8人（c001〜c008）。まだ作品がないため全員 `entry_type=intro`（自己紹介枠）で、美術館は空の額縁のみです。
+- 参加ページの「ツール」に、ハロウィン仮装ポスターを作るツールとキノコになりたいビルダーを掲載しています。
+
+## 日程
+
+| 日付 | 内容 |
+| --- | --- |
+| 10/1〜6 | 参加表明（運営3名の参加方法記事のどれかにコメント） |
+| 10/19 | 一斉投稿 |
+| 10/20〜31 | 展示（追加投稿OK） |
+| 11/1 | 終了 |
+
+展示サイトに載るのは1人1記事です。作品がなくても、自己紹介記事だけで参加できます。
 
 ## 構成
 
 ```text
-index.html                 1ページの画面
-assets/style.css           見た目・演出
-assets/site-config.js      企画の固定情報と公開状態
-assets/app.js              CSV読込・描画・操作
-assets/placeholder.png     画像欠損時の代替
-assets/ogp.png             仮のSNS共有画像
-creators.csv               公開用の参加者情報
-_headers                   Cloudflare Pages のキャッシュ設定
-SPEC.md                    要求仕様の草案
+index.html                 1ページ構成。#top（入口）/ #creators / #gallery（美術館）/ #join（参加する）をハッシュで切替
+assets/site-config.js      企画情報の設定（表示の文言はなるべくここで直す）
+assets/app.js              CSV読込とチェック、カード・美術館・メリーゴーランドの描画、画面切替、ルーレット
+assets/fx.js               ハロウィン演出（下記）
+assets/style.css           スタイル。セクション番号つきで、新しいものほど末尾
+assets/icons/              差し替えたアイコン（330×330 の WebP）
+assets/visuals/            告知記事の画像（額縁の展示物として使用）
+assets/demo/               デモモード用の架空作品画像
+assets/ogp.png             リンクプレビュー画像（1200×630）。元データは ogp-source.svg
+assets/placeholder.*       画像欠損時の代替
+creators.csv               参加者データ（1行1人）
+scripts/build-dist.sh      公開用の dist/ を作るスクリプト
+.github/workflows/deploy.yml  main への push で GitHub Pages に自動公開
+tests/data.test.js         CSVチェックなどのテスト
+_headers                   Cloudflare Pages 用のキャッシュ設定（GitHub Pages では効かない）
+SPEC.md                    要求仕様の草案（v0.2）
 ```
 
-ビルド工程はありません。仮展示は `file://` で直接開けます。`demoMode: false` にして実データの CSV を確認する際は、`fetch` が動く静的サーバーでリポジトリのルートを配信してください。
+### 演出（assets/fx.js）
 
-## 最初に設定するもの
+1. 初回だけ出る扉の入場演出
+2. 開幕までの日数で満ちていく月
+3. ページを開いたとき1回だけ飛ぶコウモリ
+4. 参加者アイコンを運ぶおばけの配達便
+5. 触ると灯るランタン飾り（全部灯すと Trick or Create が出る）
+6. Trick or Create（ランダムに1作品へ。作品がなければ1人のカードへ）
+7. 美術館の懐中電灯モード（隠れおばけを探す）
+8. フッターの上の霧と墓地
+9. 参加ページの演出（開いて6秒後に6種類から1つ。上部の帯に注釈と導火線）
 
-`assets/site-config.js` の `window.HALLOWEEN_CONFIG` を編集します。
+「動きを減らす」設定の閲覧者には、動きの大きい演出を出しません。参加者データは app.js から `halloween:data` イベントで fx.js に渡しています。
 
-- `siteName`、`shortDescription`: 正式な企画名と短い紹介。
-- `phase`: `preview`（予告版）、`open`（開催版）、`ended`（終了後）。公開切替は手動です。
-- `demoMode`: デザイン確認中は `true`。実データ確認と公開前には `false`。仮展示では note への架空リンクを作りません。
-- `eventStartAt`、`eventEndAt`: 日時をタイムゾーン付き ISO 8601 形式で記入します。例の形式は `2026-10-10T10:00:00+09:00`。**例の日時をそのまま使わないでください。**
-- `organizerName`、`organizerProfileUrl`、`organizerCharacterUrl`、`organizerStatement`: 主催者が確認した正式な名前・プロフィール・キャラ画像・企画趣旨の原文。
-- `announcementUrl`、`launchArticleUrl`、`magazineUrl`、`posterToolUrl`: 公開済みの正式 URL。未公開なら空のままにし、画面上は準備中表示にします。
+クリエイターのメリーゴーランドには速さボタン（ふつう／速い／めっちゃ速い／爆速）とブレーキがあり、止まった回数は閲覧者のブラウザ（localStorage の `ha2026-spin-log`）に残ります。
 
-HTML の `<title>`、OGP/Twitter メタ情報、`assets/ogp.png` も正式内容へ差し替えます。OGP の画像 URL は本番ドメインが決まってから絶対 URL を設定してください。仮画像には「正式素材へ差し替え予定」と書かれているため、本番公開前に必ず確認します。
+## 公開のしかた
 
-## 参加者を追加する
+`main` に push すると、GitHub Actions が `scripts/build-dist.sh` で `dist/` を作り、GitHub Pages に公開します。2分ほどかかります。**push＝即公開**なので、ローカルで確認してから push してください。
 
-`creators.csv` は UTF-8・BOMなし・ヘッダーありです。**1行に1人、代表作品は1点**です。公開用 CSV は現在ヘッダーのみで、試作の架空参加者は入れていません。
+- push の前に `git fetch origin main` で最新を取り込みます。
+- コミットメッセージは日本語で書きます。
+- 公開後は Actions の成否と、公開サイトの表示を確認します。
 
-列の順番と意味は [SPEC.md の第5章](./SPEC.md) を参照してください。作品ありなら `entry_type=work` とし、`work_type`（`illust` / `video` / `poster`）、`article_url`、`article_title`、`thumb_url` を記入します。自己紹介のみなら `entry_type=intro` とし、作品列を空にします。`intro_url` はどちらの形態でも任意です。タグは `;` 区切りです。
+### キャッシュ対策
 
-1. 主催者が参加申請と note 記事 URL を確認します。
-2. 参加者の掲載了承を確認し、`creators.csv` に1行追加します。ID は既存と重複しない `c001` 形式、日付は `YYYY-MM-DD` です。
-3. カンマや改行を含む文字は CSV の規則に従ってダブルクォートで囲みます。コピーした URL は HTTPS で始まることを確認します。
-4. ローカル・プレビューでカード、作品、リンク、画像を確認してから公開します。
+GitHub Pages では `_headers` が効かず、CSS・JS が最大10分キャッシュされます。そのため `build-dist.sh` が、`index.html` 内の `?v=dev` を公開のたびにコミットSHAへ置き換えています。**CSS・JS を追加するときも `?v=dev` を付けてください。**
 
-### よくある問題
+OGP画像（`og:image` / `twitter:image`）は `?v=2` 付きの絶対URLです。画像を差し替えたら数字を上げます。
+
+## 設定（assets/site-config.js）
+
+`window.HALLOWEEN_CONFIG` を編集します。
+
+| 項目 | 内容 |
+| --- | --- |
+| `siteName` / `siteTitleLines` | 企画名と、見出しの行分け |
+| `shortDescription` | キャッチ |
+| `phase` | `preview`（予告版）/ `open`（開催版）/ `ended`（終了後）。切替は手動 |
+| `demoMode` | `true` で架空の参加者と作品を表示（デザイン確認用）。本番は `false` |
+| `eventStartAt` / `eventEndAt` | 展示期間。タイムゾーン付き ISO 8601（例 `2026-10-20T00:00:00+09:00`） |
+| `organizerName` / `organizerProfileUrl` / `organizerCharacterUrl` / `organizerStatement` | 主催者情報と企画趣旨（告知記事からの抜粋） |
+| `team` | 運営チーム。`role` は `主催` / `運営`、`icon` は任意 |
+| `sponsors` | 協賛 |
+| `tools` | 参加ページの「ツール」欄に並べる無料ツール |
+| `announcementUrl` / `launchArticleUrl` / `magazineUrl` / `posterToolUrl` | 各種URL。未公開なら空にすると準備中表示になる |
+
+## 参加者を追加・更新する
+
+`creators.csv` は UTF-8・BOMなし・ヘッダーありです。**1行に1人、代表作品は1点**です。
+
+```text
+id,name,note_id,icon_url,catch,entry_type,work_type,article_url,article_title,thumb_url,intro_url,tags,added_at
+```
+
+- `entry_type=work`: `work_type`（`illust` / `video` / `poster`）、`article_url`、`article_title`、`thumb_url` が必須。
+- `entry_type=intro`: 作品の列は空にして、`intro_url` に自己紹介などの記事を入れる。
+- 画像は HTTPS の画像URLか、サイト内の `assets/` 以下のパス。
+- ID は既存と重複しない `c001` 形式、日付は `YYYY-MM-DD`。タグは `;` 区切り。
+- カンマや改行を含む文字は、CSV の規則に従ってダブルクォートで囲む。
+
+手順:
+
+1. 参加表明と note 記事 URL、掲載了承を確認する。
+2. 各自の note から、名前・アイコン・プロフィールの一言・記事を拾って1行追記する。
+3. `validateRows` で全行がチェックを通るか確認する（不正な行はブラウザの開発者コンソールに行番号付きで警告が出る）。
+4. ローカルでカード・リンク・画像を確認してから push する。
+
+10/20 以降に作品が届いたら、該当する人を `entry_type=work` に切り替えて、作品の記事・サムネ・部屋（`work_type`）を入れます。
+
+掲載取り下げの依頼があれば該当行を削除し、公開後に非表示を確認します。
+
+### アイコンを差し替える
+
+1. 画像を 330×330 の WebP にして `assets/icons/` に置く。
+2. ブラウザに古い画像が残らないよう、**ファイル名は毎回変える**。
+3. CSV の `icon_url` か、`site-config.js` の `team[].icon` を書き換える。運営と参加者を兼ねている人は両方とも書き換える。
+
+## ローカルで確認する
+
+```bash
+python3 -m http.server 8000
+# → http://localhost:8000/ を開く
+```
+
+`demoMode: false` では CSV を `fetch` で読むため、`file://` で直接開くと表示できません。静的サーバーで配信してください。
+
+スクリーンショットで確認するときは、PC幅 1280 とスマホ幅 390 で、はみ出しや重なりがないかを見ます。note の画像やフォントの配信元につながらない環境では代替表示になります（本番フォントの Mochiy Pop One / Zen Maru Gothic は npm の `@fontsource` で代わりに読み込めます）。
+
+### テスト
+
+```bash
+node --test tests/
+```
+
+## よくある問題
 
 | 状態 | 確認すること |
 | --- | --- |
-| 追加した人が表示されない | ID重複、必須列、`entry_type`、`work_type`、日付、URLを確認する。ブラウザの開発者コンソールに行番号付きの警告が出る |
+| 追加した人が表示されない | ID重複、必須列、`entry_type`、`work_type`、日付、URLを確認する。開発者コンソールに行番号付きの警告が出る |
 | 「展示を準備中」と出る | `creators.csv` をサーバーから取得できるか、Papa Parse が読み込めるか確認する |
 | 画像が代替画像になる | note の画像 URL が有効か確認する。note 側の画像 URL は変わる場合がある |
 | 美術館に作品がない | `entry_type=work` の有効行があるか、部屋タブの選択を確認する |
-| 更新が反映されない | デプロイ状態、CSV の応答、ブラウザ再読み込みを確認する |
+| 更新が反映されない | Actions の成否を確認し、ブラウザを再読み込みする（CSS・JS は `?v=` で更新される） |
 
-掲載取り下げ依頼があれば該当行を削除し、公開後に非表示を確認します。削除する前に運用担当と記録方法を決めてください。月1回を目安に記事・アイコン・サムネのリンクを確認します。
+## 未決事項・今後の作業
 
-## 公開前の確認
-
-- 主催者の正式名・キャラ画像の掲載範囲・企画趣旨の原文を確認。
-- 予告版を先行公開するか、開始記事と同時公開するか決定。カウントダウンを一般閲覧者に見せるには先行公開が必要。
-- 開始・終了日時、終了後の閲覧方針、CSV 更新担当を決定。
-- 仮の企画名・仮OGP・準備中文・未確定リンク・デモ機能・架空参加者が本番にないことを確認。
-- スマホ幅、キーボード、動きを減らす設定、実記事へのリンクを確認。
-
-Cloudflare Pages は GitHub 連携・Framework preset `None`・ビルドコマンド空欄・リポジトリルート配信を想定しています。`main` への push は自動公開につながるため、プレビューと公開内容の確認後に行います。
+- [ ] `tests/data.test.js` の「公開CSVはヘッダーのみ」テストが、実データ投入により失敗中。「全行がチェックを通る」テストへの書き換えを検討。
+- [ ] 展示の時刻は告知記事に記載がないため、10/20 0:00〜10/31 23:59 と仮置き。
+- [ ] キービジュアルの作者表記（画像内の「NANASHI 2026」）が未確認。
+- [ ] 10/1 以降：参加方法記事の URL（`launchArticleUrl`）と展示マガジンの URL（`magazineUrl`）を反映。
+- [ ] 10/20：`phase` を `open` に切り替え、作品が届いた人を `entry_type=work` に更新。
+- [ ] 11/1：`phase` を `ended` に切り替え。
+- [ ] Cloudflare Pages への移行（独自URL）は未着手。移行する場合は `og:url`・`og:image`・`twitter:image`・`canonical` を書き換える。
