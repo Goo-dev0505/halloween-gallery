@@ -51,8 +51,8 @@ window.HALLOWEEN_CONFIG = {
   // 「参加します！」とコメントする3記事。url が空の間は「リンク準備中」と表示する
   entryArticles: [
     { name: 'KITAcore', url: 'https://note.com/ktcrs1107/n/n01b002ed9e6e' },
-    { name: 'HONO', url: '' },
-    { name: '考える赤柴', url: '' }
+    { name: 'HONO', url: 'https://note.com/hospital_ph_hono/n/nb5512a77c633' },
+    { name: '考える赤柴', url: 'https://note.com/eager_thyme9842/n/n18add5832d72' }
   ],
   magazineUrl: '',
   posterToolUrl: 'https://self-intro-sheet-builder-202609.pages.dev/',
