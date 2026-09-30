@@ -61,6 +61,7 @@
           <h1 id="siteTitle"><span class="title-line">ハロウィンアート</span><span class="title-line title-year">2026</span></h1>
           <p id="siteLead">作品を入口に、人へ会いにいく展示会。</p>
           <p id="eventStatus" class="status" role="status">開催情報を準備中です</p>
+          <a class="entry-badge" id="entryBadge" href="#join" hidden>🎃 正式参加受付中<span id="entryBadgeUntil"></span></a>
           <p id="eventDates">開催期間は決まり次第お知らせします。</p>
           <div id="countdown" class="countdown" aria-label="開幕までのカウントダウン" aria-live="off" hidden>
             <span>開幕まで</span>
@@ -288,12 +289,25 @@
     <section class="block join-section reveal" id="join" aria-labelledby="joinTitle">
       <div class="wrap narrow">
         <h2 id="joinTitle">参加方法</h2>
-        <p class="section-intro">絵が描けなくても大丈夫。イラスト・写真・動画・漫画・音楽・文章など、ハロウィンに関わるものなら何でもOK。作品がなくても、自己紹介の記事だけで参加できます。タグや申請方法などの詳細は、10月1日公開の参加方法記事で案内します。</p>
+        <p class="section-intro">ハロウィンに関係していれば、基本なんでもOK。イラスト・写真・動画・漫画・音楽・文章・自己紹介記事、手描きでもAIでも大丈夫です。作品がなくても、自己紹介の記事だけで参加できます。</p>
         <ol class="steps" id="joinSteps">
-          <li><div><strong>10月1日〜6日｜参加表明する</strong><span>KITAcore・HONO・考える赤柴の3名が公開する参加方法記事のうち、どれか1つのコメント欄に「参加します！」と書けば正式参加です。フォローは参加条件ではありません。</span></div></li>
-          <li><div><strong>10月19日〜31日｜noteに投稿する</strong><span>10月19日が一斉投稿のスタート日です。間に合わなくても、10月31日までなら完成した人から順次投稿できます。</span></div></li>
-          <li><div><strong>展示したい1記事を申請する</strong><span>投稿は複数でもOK。展示サイトに載るのは1人1記事です。申請方法は参加方法記事で案内します。</span></div></li>
+          <li><div><strong>10月1日〜6日｜「参加します！」とコメントする</strong><span>下の3記事のどれか1つのコメント欄に「参加します！」と書けば正式参加です。3記事全部に書かなくてOK。作品が未完成でも、何を作るか決まっていなくても大丈夫です。</span>
+            <!-- 受付記事への導線：site-config.js の entryArticles から描く（app.js の renderEntry） -->
+            <div class="entry-articles" id="entryArticles"></div></div></li>
+          <li><div><strong>10月19日〜31日｜タグを付けてnoteに投稿する</strong><span>参加記事には共通タグを付けてください。10月19日は一斉投稿のスタート日で、締切ではありません。10月31日までなら完成した人から順次投稿OK。遅い投稿は、展示サイトへの掲載が間に合わないこともあります。</span>
+            <div class="hashtag-row"><code class="hashtag" id="entryHashtag">#ハロウィンアート2026</code><button class="act hashtag-copy" id="hashtagCopy" type="button">タグをコピー</button></div></div></li>
+          <li><div><strong>展示してほしい1記事のURLを送る</strong><span>投稿は何本でもOK。展示サイトに載るのは1人1記事です。展示してほしい記事のURLを、指定の記事のコメント欄に送ってください。受付場所は運営がまとめてお知らせします。</span></div></li>
         </ol>
+        <!-- 参加のおやくそく（10/1 の参加方法記事より） -->
+        <div class="panel join-rules">
+          <h3>参加のおやくそく</h3>
+          <ul>
+            <li>作品は、自分で投稿・利用できるものだけ。他人の作品や、利用条件がわからない画像は使わないでください。</li>
+            <li>過去作品もOK。他の企画に出した作品も、その企画のルールに問題がなければ出せます。</li>
+            <li>参加表明のあとに作れなくなっても大丈夫。辞退の連絡はいりません。</li>
+            <li>フォローは参加条件ではありません。上手い作品を選ぶ企画でもありません。</li>
+          </ul>
+        </div>
         <!-- 告知記事の図解。まず覚える4つ＋全体スケジュール。押すと原寸で開く -->
         <div class="exhibit-pair">
           <figure class="exhibit">

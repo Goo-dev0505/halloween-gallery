@@ -44,6 +44,16 @@ window.HALLOWEEN_CONFIG = {
   ],
   announcementUrl: 'https://note.com/ktcrs1107/n/n397fe2a90d5c',
   launchArticleUrl: '',
+  // 正式参加の受付期間（入口の「受付中」バッジはこの間だけ出る）
+  entryPeriod: { start: '2026-10-01T00:00:00+09:00', end: '2026-10-06T23:59:00+09:00' },
+  // 共通ハッシュタグ
+  hashtag: '#ハロウィンアート2026',
+  // 「参加します！」とコメントする3記事。url が空の間は「リンク準備中」と表示する
+  entryArticles: [
+    { name: 'KITAcore', url: '' },
+    { name: 'HONO', url: '' },
+    { name: '考える赤柴', url: '' }
+  ],
   magazineUrl: '',
   posterToolUrl: 'https://self-intro-sheet-builder-202609.pages.dev/',
   // 参加ページの「ツール」に並べる無料ツール。image は任意（HTTPS か assets/ の画像。なければ icon の絵文字）

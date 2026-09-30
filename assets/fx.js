@@ -270,7 +270,7 @@
   const joinFx = { timer: 0, running: null };
   function joinParts() {
     const view = document.querySelector('[data-view="join"]');
-    return view ? [...view.querySelectorAll('h2, .section-intro, .tool-panel, .tool-card, .steps > li, .exhibit, .links > *')] : [];
+    return view ? [...view.querySelectorAll('h2, .section-intro, .tool-panel, .tool-card, .steps > li, .join-rules, .exhibit, .links > *')] : [];
   }
   function sessionGet(key) { try { return sessionStorage.getItem(key); } catch { return null; } }
   function sessionSet(key, value) { try { sessionStorage.setItem(key, value); } catch { /* 保存できなくても動く */ } }

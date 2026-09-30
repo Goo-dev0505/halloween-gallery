@@ -201,7 +201,7 @@
       });
     }
     setExternal('announcementLink', config.announcementUrl, '告知記事を読む');
-    setExternal('launchArticleLink', config.launchArticleUrl, '参加方法記事を読む', '参加方法記事：10月1日公開予定');
+    setExternal('launchArticleLink', config.launchArticleUrl, '参加方法記事を読む', '参加方法記事：リンク準備中');
     setExternal('magazineLink', config.magazineUrl, '展示マガジンを見る', '展示マガジン：準備中');
     const tool = httpsUrl(config.posterToolUrl);
     replaceText('posterToolStatus', tool ? '公開中' : '近日公開');
@@ -271,6 +271,35 @@
       append(body, link('ツールを開く', httpsUrl(t.url), 'btn tool-open'));
       return append(card, media, body);
     }));
+  }
+  // 参加受付：3つの受付記事リンク・共通タグのコピー・入口の「受付中」バッジ
+  function renderEntry() {
+    const box = $('entryArticles');
+    const articles = Array.isArray(config.entryArticles) ? config.entryArticles.filter(a => a && a.name) : [];
+    if (box && articles.length) {
+      box.replaceChildren(...articles.map(a => {
+        const url = httpsUrl(a.url, 'note.com');
+        if (url) return link(`${a.name}の記事`, url, 'act hot');
+        const off = el('span', 'act entry-pending', `${a.name}の記事：リンク準備中`); off.setAttribute('aria-disabled', 'true');
+        return off;
+      }));
+    }
+    const tag = String(config.hashtag || '').trim();
+    if (tag && $('entryHashtag')) $('entryHashtag').textContent = tag;
+    $('hashtagCopy')?.addEventListener('click', async e => {
+      const button = e.currentTarget;
+      try { await navigator.clipboard.writeText(tag || $('entryHashtag').textContent); button.textContent = 'コピーした！'; }
+      catch { button.textContent = '長押しでコピーしてな'; }
+      setTimeout(() => { button.textContent = 'タグをコピー'; }, 1800);
+    });
+    // 受付期間中だけ入口にバッジを出す（期間は日本時間で指定）
+    const start = eventTime(config.entryPeriod?.start), end = eventTime(config.entryPeriod?.end), now = Date.now();
+    const badgeNode = $('entryBadge');
+    if (badgeNode && Number.isFinite(start) && Number.isFinite(end) && now >= start && now <= end) {
+      const until = new Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', month: 'numeric', day: 'numeric' }).format(new Date(end));
+      replaceText('entryBadgeUntil', `（${until}まで）`);
+      badgeNode.hidden = false;
+    }
   }
   function badge() { return el('span', 'badge-new', 'NEW'); }
   function imageOrPlaceholder(url, alt, kind, width, height) {
@@ -712,7 +741,7 @@
   }
   async function init() {
     showView(parseHash(location.hash).view); // 最初のフレームから正しいビューを出す（データ読込前）
-    initEvent(); initOrganizer(); initTeam(); renderTools(); bindUi(); bindRouter();
+    initEvent(); initOrganizer(); initTeam(); renderTools(); renderEntry(); bindUi(); bindRouter();
     if (demoMode && $('demoNotice')) $('demoNotice').hidden = false;
     try { state.rows = demoMode ? demoRows() : await loadCsv(); state.order = shuffle(state.rows); }
     catch (error) { state.failed = true; console.error('creators.csv の取得・解析に失敗しました:', error); }
