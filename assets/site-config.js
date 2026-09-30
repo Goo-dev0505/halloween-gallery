@@ -55,10 +55,10 @@ window.HALLOWEEN_CONFIG = {
     { name: '考える赤柴', url: 'https://note.com/eager_thyme9842/n/n18add5832d72' }
   ],
   magazineUrl: '',
-  posterToolUrl: 'https://self-intro-sheet-builder-202609.pages.dev/',
+  posterToolUrl: 'https://self-intro-sheet-builder-kitacore.pages.dev/',
   // 参加ページの「ツール」に並べる無料ツール。image は任意（HTTPS か assets/ の画像。なければ icon の絵文字）
   tools: [
-    { icon: '🎃', name: 'ハロウィン仮装ポスターを作るツール', en: 'SELF-INTRO SHEET BUILDER', url: 'https://self-intro-sheet-builder-202609.pages.dev/',
+    { icon: '🎃', name: 'ハロウィン仮装ポスターを作るツール', en: 'SELF-INTRO SHEET BUILDER', url: 'https://self-intro-sheet-builder-kitacore.pages.dev/',
       text: 'noteのURLを入れて仮装を選ぶと、あなたのnoteを紹介するハロウィン仮装ポスターの画像生成プロンプトができます。' },
     { icon: '🍄', name: 'キノコになりたいビルダー', en: 'KINOKO SPECIMEN BUILDER', url: 'https://kinoko-specimen-builder.pages.dev/', image: 'https://kinoko-specimen-builder.pages.dev/og-image.png',
       text: 'noteプロフィールとキャラ画像から、その人だけの人格キノコを描く画像生成プロンプトを組み立てます。キノコのままハロウィンしてもええ。' }
