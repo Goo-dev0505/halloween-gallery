@@ -97,24 +97,32 @@ OGP画像（`og:image` / `twitter:image`）は `?v=2` 付きの絶対URLです�
 
 ## 参加者を追加・更新する
 
-`creators.csv` は UTF-8・BOMなし・ヘッダーありです。**1行に1人、代表作品は1点**です。
+編集するのはリポジトリ直下の **`creators.csv`** です。GitHub Desktop の「Show in Finder」からリポジトリを開き、テキストエディタで編集します。`index.html` や `assets/site-config.js` は、参加者を追加するだけなら触りません。CSV は UTF-8・BOMなし・ヘッダーありで、**1行に1人、代表作品は1点**です。
 
 ```text
 id,name,note_id,icon_url,catch,entry_type,work_type,article_url,article_title,thumb_url,intro_url,tags,added_at
 ```
 
-- `entry_type=work`: `work_type`（`illust` / `video` / `poster`）、`article_url`、`article_title`、`thumb_url` が必須。
-- `entry_type=intro`: 作品の列は空にして、`intro_url` に自己紹介などの記事を入れる。
-- 画像は HTTPS の画像URLか、サイト内の `assets/` 以下のパス。
-- ID は既存と重複しない `c001` 形式、日付は `YYYY-MM-DD`。タグは `;` 区切り。
-- カンマや改行を含む文字は、CSV の規則に従ってダブルクォートで囲む。
+| 列 | 入れ方 |
+| --- | --- |
+| `id` | 既存と重複しない `c001` 形式。追加前に既存IDを確認して未使用の番号を使う |
+| `name` / `note_id` | 表示名 / noteプロフィールURLの末尾にあるID（URL全体ではない） |
+| `icon_url` / `catch` | HTTPSの画像URLまたは `assets/` の画像パス / カードに出す短い推薦文。どちらも空欄可 |
+| `entry_type` | 自己紹介枠は `intro`、作品掲載は `work` |
+| `work_type` / `article_url` / `article_title` / `thumb_url` | `work` のとき必須。種類は `illust`・`video`・`poster` のいずれか。記事URLは HTTPS の note URL、画像は HTTPS または `assets/` のパス |
+| `intro_url` | 任意の HTTPS の note 記事URL。空欄ならカードにはnoteプロフィールへのリンクだけが出る |
+| `tags` | `;` 区切り。先頭3個がカードに表示され、4個目以降は「+件数」になる |
+| `added_at` | 登録日を `YYYY-MM-DD` で入力。未来日は使えない |
 
-手順:
+`intro` の場合は作品用の4列（`work_type` から `thumb_url`）を空欄にします。各行はヘッダーと同じ **13列** にしてください。値にカンマや改行が入る場合は、CSVの規則に従って値全体をダブルクォートで囲みます。
 
-1. 参加表明と note 記事 URL、掲載了承を確認する。
-2. 各自の note から、名前・アイコン・プロフィールの一言・記事を拾って1行追記する。
-3. `validateRows` で全行がチェックを通るか確認する（不正な行はブラウザの開発者コンソールに行番号付きで警告が出る）。
-4. ローカルでカード・リンク・画像を確認してから push する。
+### GitHub Desktop での登録手順
+
+1. GitHub Desktop で `halloween-gallery` を選び、「Fetch origin」を押す。更新があれば「Pull origin」で取り込む。
+2. 参加表明・掲載了承・note の情報を確認して、`creators.csv` の末尾に1行追加する。既存参加者の更新ならその人の行だけ直す。
+3. `node --test tests/*.test.js` を実行する。ローカル表示は後述の静的サーバーで開き、カード・タグ・リンク・画像を確認する。不正な行はブラウザの開発者コンソールに行番号付きで警告が出る。
+4. GitHub Desktop の「Changes」で `creators.csv` の差分を確認し、コミットして「Push origin」を押す。`main` への push で GitHub Pages に自動公開される。
+5. [GitHub Actions](https://github.com/Goo-dev0505/halloween-gallery/actions/workflows/deploy.yml) の成功を確認し、[公開サイトのクリエイター一覧](https://goo-dev0505.github.io/halloween-gallery/#creators)で名前を検索して表示を確認する。
 
 10/20 以降に作品が届いたら、該当する人を `entry_type=work` に切り替えて、作品の記事・サムネ・部屋（`work_type`）を入れます。
 
