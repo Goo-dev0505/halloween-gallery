@@ -12,10 +12,9 @@ const creator = {
 };
 const logger = { warnings: [], warn(message) { this.warnings.push(message); } };
 
-test('公開CSVはヘッダーのみで実参加者データを含まない', () => {
+test('公開CSVは所定のヘッダーを持つ', () => {
   const csv = fs.readFileSync(path.join(__dirname, '../creators.csv'), 'utf8');
-  assert.equal(csv.trim().split(/\r?\n/).length, 1);
-  assert.equal(csv.startsWith('id,name,note_id,'), true);
+  assert.equal(csv.split(/\r?\n/, 1)[0], 'id,name,note_id,icon_url,catch,entry_type,work_type,article_url,article_title,thumb_url,intro_url,tags,added_at');
 });
 
 test('有効な作品参加者と自己紹介参加者を受け入れる', () => {
