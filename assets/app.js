@@ -4,6 +4,8 @@
   const COLUMNS = ['id','name','note_id','icon_url','catch','entry_type','work_type','article_url','article_title','thumb_url','intro_url','tags','added_at'];
   const TYPES = new Set(['illust','video','poster']);
   const DAY = 86400000;
+  // NEW バッジを出す日数。登録日（added_at）の 0:00 から数えるので、2 なら「登録日と翌日」の2日間
+  const NEW_DAYS = 2;
   const $ = id => document.getElementById(id);
   const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const config = typeof window !== 'undefined' ? (window.HALLOWEEN_CONFIG || {}) : {};
@@ -82,7 +84,7 @@
       seen.add(r.id);
       r.profile = `https://note.com/${encodeURIComponent(r.note_id)}`;
       r.tagList = r.tags.split(';').map(tag => tag.trim()).filter(Boolean);
-      r.isNew = now - new Date(r.added_at + 'T00:00:00+09:00').getTime() < 7 * DAY;
+      r.isNew = now - new Date(r.added_at + 'T00:00:00+09:00').getTime() < NEW_DAYS * DAY;
       out.push(r);
     });
     return out;

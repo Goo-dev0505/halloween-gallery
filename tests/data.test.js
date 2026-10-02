@@ -81,3 +81,11 @@ test('仮展示の作品画像はローカルにあり、架空の外部リン�
     if (row.thumb_url) assert.equal(fs.existsSync(path.join(__dirname, '..', row.thumb_url)), true);
   }
 });
+
+test('NEW は登録日と翌日の2日間だけ付く', () => {
+  const at = iso => Date.parse(iso);
+  const row = { ...creator, added_at: '2026-10-03' };
+  assert.equal(validateRows([row], at('2026-10-03T08:00:00+09:00'), logger)[0].isNew, true);  // 登録日
+  assert.equal(validateRows([row], at('2026-10-04T23:59:00+09:00'), logger)[0].isNew, true);  // 翌日の終わりまで
+  assert.equal(validateRows([row], at('2026-10-05T00:00:00+09:00'), logger)[0].isNew, false); // 3日目には消える
+});
