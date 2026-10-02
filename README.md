@@ -13,8 +13,9 @@ note クリエイター参加型のオンライン展示会「ハロウィンア
 ## 現在の状態（2026-10-03）
 
 - **公開中（予告版）**。`phase: 'preview'`、`demoMode: false` で実データを表示しています。
-- 参加者は9人（c001〜c009）。まだ作品がないため全員 `entry_type=intro`（自己紹介枠）で、美術館は空の額縁のみです。
+- 参加者は10人（c001〜c010）。まだ作品がないため全員 `entry_type=intro`（自己紹介枠）で、美術館は空の額縁のみです。
 - 参加ページの「ツール」に、ハロウィン仮装ポスターを作るツールとキノコになりたいビルダーを掲載しています。
+- 入口に特別賞「おもしろ部門」（しろのある・ねんころ選）を掲載。賞品・発表日は未定で「後日発表」表示です（`site-config.js` の `awards`）。
 
 ## 日程
 
@@ -112,7 +113,7 @@ id,name,note_id,icon_url,catch,entry_type,work_type,article_url,article_title,th
 | `work_type` / `article_url` / `article_title` / `thumb_url` | `work` のとき必須。種類は `illust`・`video`・`poster` のいずれか。記事URLは HTTPS の note URL、画像は HTTPS または `assets/` のパス |
 | `intro_url` | 任意の HTTPS の note 記事URL。空欄ならカードにはnoteプロフィールへのリンクだけが出る |
 | `tags` | `;` 区切り。先頭3個がカードに表示され、4個目以降は「+件数」になる |
-| `added_at` | 登録日を `YYYY-MM-DD` で入力。未来日は使えない |
+| `added_at` | 登録日を `YYYY-MM-DD` で入力。未来日は使えない。**登録日と翌日の2日間**、カードに NEW が付く（日数は `assets/app.js` の `NEW_DAYS`） |
 
 `intro` の場合は作品用の4列（`work_type` から `thumb_url`）を空欄にします。各行はヘッダーと同じ **13列** にしてください。値にカンマや改行が入る場合は、CSVの規則に従って値全体をダブルクォートで囲みます。
 
@@ -123,6 +124,20 @@ id,name,note_id,icon_url,catch,entry_type,work_type,article_url,article_title,th
 3. `node --test tests/*.test.js` を実行する。ローカル表示は後述の静的サーバーで開き、カード・タグ・リンク・画像を確認する。不正な行はブラウザの開発者コンソールに行番号付きで警告が出る。
 4. GitHub Desktop の「Changes」で `creators.csv` の差分を確認し、コミットして「Push origin」を押す。`main` への push で GitHub Pages に自動公開される。
 5. [GitHub Actions](https://github.com/Goo-dev0505/halloween-gallery/actions/workflows/deploy.yml) の成功を確認し、[公開サイトのクリエイター一覧](https://goo-dev0505.github.io/halloween-gallery/#creators)で名前を検索して表示を確認する。
+
+### 1行をもらって登録するときのチェック
+
+運営メンバーなどから「この行を入れて」と CSV の1行をもらったときは、そのまま貼らずに次を確かめてから登録します（2026-10-03 のミュリン♪さん登録で実施した手順）。
+
+1. **ID を振り直す**：もらった行の `id` は使わない。`creators.csv` の最後の番号の次を使う（例：もらった行が `c009` だったが夏目羊さんと重複していたため `c010` にした）。重複すると、その行はチェックで弾かれて表示されない。
+2. **13列あるか数える**：`intro` なら `entry_type` のあとに作品用の4列が空欄で続き、その次が `intro_url`・`tags`・`added_at` の順になる（`…,intro,,,,,自己紹介記事URL,タグ1;タグ2,2026-10-03`。記事URLがなければそこも空欄）。一言紹介（`catch`）に半角カンマがあれば、値全体をダブルクォートで囲む。
+3. **空欄を埋める**：
+   - `intro_url`（自己紹介記事）：本人の note で「自己紹介」「はじめまして」の記事を探す。記事一覧は `https://note.com/<note_id>/rss`（直近25件）で URL ごと取れる。見つからなければ**空欄のまま本人に確認**する。別の企画への参加記事などは入れない。
+   - `tags`：プロフィール文と最近の記事のテーマから3つ選ぶ（例：`引き寄せ;ハッピーライフ;お出かけ`）。先頭3つがカードに出る。
+4. **`added_at` は登録した日**にする（NEW が2日間付く）。
+5. **チェックを回す**：`node --test tests/*.test.js` と、全行が `validateRows` を通るか（ブラウザの開発者コンソールに警告が出ていないか）。
+6. **カードを見る**：一言紹介が長いとカードが縦に伸びる（93字で5行。崩れはしない）。PC幅・スマホ幅で、はみ出しがないか確かめる。
+7. **コミットメッセージに変更理由を書く**：ID を変えた、タグを補った、など、もらった行と違う点を残す。push 後は Actions の成功を確認する。
 
 10/20 以降に作品が届いたら、該当する人を `entry_type=work` に切り替えて、作品の記事・サムネ・部屋（`work_type`）を入れます。
 
