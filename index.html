@@ -31,6 +31,7 @@
   <script defer src="assets/site-config.js?v=dev"></script>
   <script defer src="assets/app.js?v=dev"></script>
   <script defer src="assets/fx.js?v=dev"></script>
+  <script defer src="assets/award.js?v=dev"></script>
 </head>
 <body>
   <div class="floaties" aria-hidden="true"><span>👻</span><span>🎃</span><span>🦇</span><span>👻</span></div>
@@ -130,6 +131,15 @@
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- 特別賞：協賛者が「おもしろい・刺さった」と思った作品に贈る賞。中身は award.js が site-config.js の awards から描く -->
+    <section class="block award-section reveal" id="award" aria-labelledby="awardTitle" hidden>
+      <div class="wrap">
+        <h2 id="awardTitle">特別賞</h2>
+        <p class="section-intro">順位はつけません。協賛してくれた人が展示を見て回って、心をつかまれた作品に賞を贈ります。</p>
+        <div class="award-list" id="awardList"></div>
       </div>
     </section>
 
@@ -290,6 +300,12 @@
       <div class="wrap narrow">
         <h2 id="joinTitle">参加方法</h2>
         <p class="section-intro">ハロウィンに関係していれば、基本なんでもOK。イラスト・写真・動画・漫画・音楽・文章・自己紹介記事、手描きでもAIでも大丈夫です。作品がなくても、自己紹介の記事だけで参加できます。</p>
+        <!-- 特別賞の帯：募集中だけ表示（award.js） -->
+        <a class="award-banner" id="awardBanner" href="#award" hidden>
+          <span class="award-banner-icon" aria-hidden="true">🏆</span>
+          <span class="award-banner-body"><strong>特別賞あり</strong><span id="awardBannerText"></span></span>
+          <span class="award-banner-go" aria-hidden="true">→</span>
+        </a>
         <ol class="steps" id="joinSteps">
           <li><div><strong>10月1日〜6日｜「参加します！」とコメントする</strong><span>下の3記事のどれか1つのコメント欄に「参加します！」と書けば正式参加です。3記事全部に書かなくてOK。作品が未完成でも、何を作るか決まっていなくても大丈夫です。</span>
             <!-- 受付記事への導線：site-config.js の entryArticles から描く（app.js の renderEntry） -->

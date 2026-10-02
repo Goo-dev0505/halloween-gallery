@@ -618,7 +618,7 @@
   }
   /* ---------- ルーティング（入口はスクロール／展示室は画面切り替え） ---------- */
   const VIEWS = ['top', 'creators', 'gallery', 'join'];
-  const VIEW_ALIAS = { about: 'top', tool: 'join' }; // 旧アンカーの後方互換：ビューに切り替えた上で該当セクションへスクロール
+  const VIEW_ALIAS = { about: 'top', tool: 'join', award: 'top' }; // 旧アンカーの後方互換：ビューに切り替えた上で該当セクションへスクロール
   const SWITCH_MS = 400;                              // body.is-switching を付ける時間（CSS の暗転アニメと合わせる）
   const router = { view: '', timer: 0 };
   function viewOf(node) { return node?.closest?.('.view') || null; }

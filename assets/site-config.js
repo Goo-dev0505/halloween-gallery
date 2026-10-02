@@ -42,6 +42,22 @@ window.HALLOWEEN_CONFIG = {
   sponsors: [
     { role: '協賛', name: 'ChatGPTCreativeClub（CCC）', title: 'ChatGPTCreativeClub【共同マガジン】', url: 'https://note.com/nenkoro2/m/m38c6d06537bf', image: 'https://assets.st-note.com/production/uploads/images/271978075/293f6ccb3762be3fc835c5333ee9446b.png?width=432&dpr=2' }
   ],
+  // 特別賞（協賛者が選ぶ賞）。1件＝1つの賞
+  // selectors：選ぶ人。creatorId を書けば名前・アイコン・note は creators.csv から引く
+  // winners：発表のときに { id: 'c001', by: '選んだ人', title: '賞の呼び名（任意）', comment: '講評' } を入れると「発表」表示に切り替わる
+  // prize / announceLabel：空なら「後日発表」と表示
+  awards: [
+    { name: 'おもしろ部門',
+      selectors: [ { creatorId: 'c006' }, { creatorId: 'c004' } ],
+      message: 'しろのあるさんとねんころさんが、展示の中から「おもしろい！」と思った作品に賞を贈ります。',
+      rule: '入賞者が被った場合は、ふたりがジャンケンで賞の取り合いをします。',
+      prize: '', announceLabel: '',
+      image: 'assets/visuals/award-janken.webp',
+      imageAlt: 'カフェのテーブルでジャンケンをするふたり。黒板に「入賞者が被った場合は、ねんころちゃんとジャンケンで賞の取り合いをします」',
+      imageCaption: '被ったらジャンケンで決着',
+      sourceUrl: 'https://note.com/shirono_aru/n/n19949647b0d1',
+      winners: [] }
+  ],
   announcementUrl: 'https://note.com/ktcrs1107/n/n397fe2a90d5c',
   launchArticleUrl: 'https://note.com/ktcrs1107/n/n01b002ed9e6e',
   // 正式参加の受付期間（入口の「受付中」バッジはこの間だけ出る）
