@@ -320,11 +320,20 @@
   function avatar(r) {
     return r.icon_url ? imageOrPlaceholder(r.icon_url, '', 'avatar', 64, 64) : el('span', 'avatar image-placeholder', '🎃');
   }
+  /* 一言紹介：カードでは3行にそろえて「…」で止める（CSS）。全文はマウスを乗せると出て、
+     タップ・クリックで開閉できる。読み上げソフトには常に全文が伝わる（見た目だけを切っている） */
+  function catchText(text) {
+    const p = el('p', 'catch', text);
+    if (!text) return p;
+    p.title = text;
+    p.addEventListener('click', () => p.classList.toggle('is-open'));
+    return p;
+  }
   function creatorCard(r) {
     const card = el('article', 'card'); card.id = `creator-${r.id}`; card.tabIndex = -1;
     if (r.isNew) append(card, badge());
     const top = el('div', 'top'), heading = el('div');
-    append(heading, el('h3', '', r.name), el('p', 'catch', r.catch));
+    append(heading, el('h3', '', r.name), catchText(r.catch));
     append(top, avatar(r), heading); append(card, top);
     if (r.tagList.length) {
       const tags = el('div', 'tags');
