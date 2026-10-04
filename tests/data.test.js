@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { httpsUrl, validDate, validateRows, carouselSlotCount, eventPresentation, demoRows } = require('../assets/app.js');
+const { httpsUrl, validDate, validateRows, carouselSlotCount, eventPresentation, demoRows, spinMessage, totalMessage } = require('../assets/app.js');
 
 const now = Date.parse('2026-09-26T12:00:00+09:00');
 const creator = {
@@ -88,4 +88,21 @@ test('NEW は登録日と翌日の2日間だけ付く', () => {
   assert.equal(validateRows([row], at('2026-10-03T08:00:00+09:00'), logger)[0].isNew, true);  // 登録日
   assert.equal(validateRows([row], at('2026-10-04T23:59:00+09:00'), logger)[0].isNew, true);  // 翌日の終わりまで
   assert.equal(validateRows([row], at('2026-10-05T00:00:00+09:00'), logger)[0].isNew, false); // 3日目には消える
+});
+
+test('メリーゴーランドのセリフは連続・回数の優先順で決まる', () => {
+  assert.equal(spinMessage('A', 1, 1).level, 'first');
+  assert.equal(spinMessage('A', 3, 3).level, 'streak');      // 3連続は回数より優先
+  assert.equal(spinMessage('A', 5, 5).level, 'miracle');     // 5連続〜はありえんボケ
+  assert.match(spinMessage('A', 10, 10).text, /宝くじ/);     // 10連続
+  assert.match(spinMessage('A', 20, 1).text, /親戚/);        // 20回〜
+  assert.equal(spinMessage('A', 12, 1).level, 'king');       // 10回〜は殿堂入り
+});
+
+test('通算ブレーキの節目だけツッコミが出る', () => {
+  assert.equal(totalMessage(49), '');
+  assert.match(totalMessage(50), /あほやろ/);
+  assert.match(totalMessage(100), /住んでる/);
+  assert.equal(totalMessage(150), '');
+  assert.match(totalMessage(300), /運営より/);
 });

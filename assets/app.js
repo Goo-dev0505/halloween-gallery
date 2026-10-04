@@ -89,7 +89,7 @@
     });
     return out;
   }
-  if (typeof module !== 'undefined' && module.exports) module.exports = { httpsUrl, imageUrl, validDate, validateRows, carouselSlotCount, eventPresentation, demoRows };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { httpsUrl, imageUrl, validDate, validateRows, carouselSlotCount, eventPresentation, demoRows, spinMessage, totalMessage };
   if (typeof document === 'undefined') return;
 
   function el(tag, className, text) {
@@ -531,7 +531,11 @@
   }
   // 回数と連続回数からセリフと演出の種類を決める（上ほど優先）
   function spinMessage(name, count, streak) {
+    // 81人いたら10連続は約1/81の9乗。ほぼ起きない「ありえん」ボケ
+    if (streak >= 10) return { level: 'miracle', text: `🎰 ${name}さん、${streak}連続！？ ありえん。今すぐ宝くじ買うてこい！` };
+    if (streak >= 5) return { level: 'miracle', text: `😱 ${name}さん、${streak}連続……ワイ、ほんまに何もしてへんで？` };
     if (streak >= 3) return { level: 'streak', text: `🌀 ${name}さん、${streak}連続！！ 仕込んでへんで……？` };
+    if (count >= 20) return { level: 'king', text: `🏯 ${count}回目の${name}さん。もう親戚やん。` };
     if (count >= 10) return { level: 'king', text: `👑 ${count}回目の${name}さん。殿堂入りや。` };
     if (count >= 7) return { level: 'follow', text: `🫣 ${count}回目。もう${name}さんのnote、見に行ってきたら？` };
     if (count >= 5) return { level: 'love', text: `💘 ${count}回目の${name}さん。……好きすぎやろ。` };
@@ -539,6 +543,15 @@
     if (count >= 3) return { level: 'fate', text: `👀 ${name}さん、${count}回目……運命かもしれん。` };
     if (count === 2) return { level: 'again', text: `🎃 また${name}さん！ 2回目や。` };
     return { level: 'first', text: `🎃 ${name}さんに止まった！` };
+  }
+  // 通算ブレーキ回数への節目ツッコミ。該当しない回は空文字（表示しない）
+  function totalMessage(total) {
+    if (total === 10) return '10回目のブレーキ。ハマってきたな？';
+    if (total === 30) return '30回目。そろそろ記事も読んでな？';
+    if (total === 50) return '50回！？ あほやろ！（褒めてる）';
+    if (total === 100) return '100回……もうここに住んでるやん。';
+    if (total >= 200 && total % 100 === 0) return `${total}回。運営より回してる。`;
+    return '';
   }
   // カード右上の回数バッジ（2回以上）と、10回以上の王冠
   function paintSpinBadge(item) {
@@ -571,13 +584,16 @@
     // 演出：好きすぎ＝ハート、殿堂入り＝王冠＋紙吹雪、連続＝舞台が揺れる
     if (msg.level === 'love' || msg.level === 'follow') burst(item, ['💘', '💕', '💗', '💘', '💞', '💕']);
     if (msg.level === 'king') burst(item, ['👑', '✨', '🎉', '✨', '👑', '🎉']);
-    if (msg.level === 'streak' && !reduced) {
+    if (msg.level === 'miracle') burst(item, ['🎰', '💰', '✨', '🎉', '💰', '🎰', '✨', '🎉']);
+    const tsukkomi = totalMessage(total);
+    if (total === 50 || total === 100) burst(item, ['🎃', '🎃', '👻', '🎃', '🦇', '🎃']);
+    if ((msg.level === 'streak' || msg.level === 'miracle' || total === 50) && !reduced) {
       const stage = $('carouselRing')?.closest('.stage');
       stage?.classList.remove('is-jolt'); void stage?.offsetWidth; stage?.classList.add('is-jolt');
     }
     const go = el('button', 'act hot', 'カードを見る'); go.type = 'button'; go.dataset.creatorId = r.id;
     const actions = append(el('span', 'spin-result-actions'), go);
-    if (msg.level === 'follow' || msg.level === 'king') append(actions, link('noteを見る', r.profile));
+    if (msg.level === 'follow' || msg.level === 'king' || msg.level === 'miracle') append(actions, link('noteを見る', r.profile));
     const meta = el('span', 'spin-result-meta', `通算${total}回目のブレーキ`);
     const reset = el('button', 'spin-reset', '記録を消す'); reset.type = 'button';
     reset.addEventListener('click', () => {
@@ -585,7 +601,9 @@
       carousel.items.forEach(paintSpinBadge); clearSpinResult();
     });
     box.className = `spin-result is-${msg.level}`;
-    box.replaceChildren(el('span', 'spin-result-text', msg.text), actions, append(el('span', 'spin-result-foot'), meta, reset));
+    box.replaceChildren(el('span', 'spin-result-text', msg.text));
+    if (tsukkomi) box.append(el('span', 'spin-result-tsukkomi', tsukkomi));
+    box.append(actions, append(el('span', 'spin-result-foot'), meta, reset));
     box.hidden = false;
   }
   function clearSpinResult() {

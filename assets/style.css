@@ -900,6 +900,11 @@ body.is-torch .frame:nth-child(odd)::before { filter: drop-shadow(0 0 14px rgb(2
 .spin-result.is-king { border-color: #ffd54a; box-shadow: 0 0 24px rgb(255 213 74 / 35%); }
 .spin-result.is-king .spin-result-text { color: #ffe08a; }
 .spin-result.is-streak .spin-result-text { color: var(--accent); }
+/* ありえん連続：金と橙で派手に */
+.spin-result.is-miracle { border-color: var(--accent); box-shadow: 0 0 28px rgb(255 122 26 / 45%); }
+.spin-result.is-miracle .spin-result-text { color: #ffd48a; }
+/* 通算回数への節目ツッコミ（セリフの下に小さく1行） */
+.spin-result-tsukkomi { color: var(--mint); font-size: 13px; font-weight: 700; }
 
 /* ---------- 24. ツール一覧（参加ページ） ---------- */
 .tool-list { display: grid; gap: 20px; }
