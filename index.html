@@ -32,6 +32,7 @@
   <script defer src="assets/app.js?v=dev"></script>
   <script defer src="assets/fx.js?v=dev"></script>
   <script defer src="assets/award.js?v=dev"></script>
+  <script defer src="assets/secrets.js?v=dev"></script>
 </head>
 <body>
   <div class="floaties" aria-hidden="true"><span>👻</span><span>🎃</span><span>🦇</span><span>👻</span></div>
@@ -78,6 +79,7 @@
             <a class="btn secondary" id="heroSecondary" href="#join">参加方法を見る</a>
             <a class="btn text-link" href="#gallery">作品を見る</a>
           </div>
+          <button class="secrets-open" type="button" data-secrets-open>🔍 このサイト、しかけが12個隠れてます <span class="secrets-count" data-secrets-count>0/12</span></button>
           <p class="credit-line" id="heroCredits">特設サイト制作・ポスターツール提供：KITAcore</p>
         </div>
         <aside class="organizer-card panel" aria-labelledby="organizerName">
@@ -369,7 +371,23 @@
       <p id="footerSponsors" hidden></p>
       <p>特設サイト制作・ポスターツール提供：KITAcore</p>
       <p id="footerEventDates">開催期間：準備中</p>
+      <p><button class="secrets-open is-footer" type="button" data-secrets-open>🔍 しかけ探し <span class="secrets-count" data-secrets-count>0/12</span></button></p>
     </div>
   </footer>
+  <!-- しかけ探し：謎かけの一覧と、発見の通知（secrets.js） -->
+  <dialog class="secrets-dialog" id="secretsDialog" aria-labelledby="secretsTitle">
+    <div class="secrets-inner">
+      <div class="secrets-head">
+        <h2 id="secretsTitle">しかけ探し</h2>
+        <button class="secrets-close" type="button" data-secrets-close aria-label="閉じる">✕</button>
+      </div>
+      <p class="secrets-lead">このサイトのあちこちに、12個のしかけが隠れています。体験すると自動で印がつきます。答えは見つけるまでヒミツ。</p>
+      <div class="secrets-meter"><span class="secrets-bar" aria-hidden="true"><span id="secretsFill"></span></span><span id="secretsProgress">0 / 12</span></div>
+      <p class="secrets-done" id="secretsDone" hidden>ぜんぶ見つけた！ ほんまもんのハロウィン探検家や。見つけたことを #ハロウィンアート2026 で教えてな。</p>
+      <div class="secrets-list" id="secretsList"></div>
+      <p class="secrets-foot">印はこの端末のブラウザにだけ残ります。<button class="secrets-reset" id="secretsReset" type="button">印を消す</button></p>
+    </div>
+  </dialog>
+  <div class="secret-toast" id="secretToast" role="status" aria-live="polite" hidden></div>
 </body>
 </html>

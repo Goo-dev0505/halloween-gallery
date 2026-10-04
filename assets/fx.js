@@ -47,6 +47,8 @@
   }
   function storageGet(key) { try { return localStorage.getItem(key); } catch { return null; } }
   function storageSet(key, value) { try { localStorage.setItem(key, value); } catch { /* 保存できなくても演出は動く */ } }
+  // しかけ探し（secrets.js）に「見つけた」を知らせる
+  function secret(id) { document.dispatchEvent(new CustomEvent('halloween:secret', { detail: { id } })); }
   function go(hash) { if (location.hash === hash) window.dispatchEvent(new HashChangeEvent('hashchange')); else location.hash = hash; }
 
   const PUMPKIN = '<svg viewBox="0 0 64 60" aria-hidden="true" focusable="false"><path class="pk-stem" d="M31 12c0-6 3-9 8-10" fill="none" stroke-width="4" stroke-linecap="round"/><ellipse class="pk-body" cx="20" cy="36" rx="17" ry="21"/><ellipse class="pk-body" cx="44" cy="36" rx="17" ry="21"/><ellipse class="pk-mid" cx="32" cy="36" rx="15" ry="23"/><path class="pk-face" d="M18 30l6-8 6 8zM34 30l6-8 6 8zM16 40q16 14 32 0l-5 2-3 5-4-4-4 4-4-4-4 4-3-5z"/></svg>';
@@ -64,6 +66,21 @@
     hero.style.setProperty('--moon-cut', `${Math.round(68 + phase * 102)}%`);
     hero.style.setProperty('--moon-glow', `${Math.round(14 + phase * 26)}%`);
     if (phase >= 1) hero.classList.add('is-full-moon');
+    // 月を押すと、満月（開幕）までの日数をしゃべる。しかけ探しの「満ちていく月」
+    // 月は .hero::before の飾りで押せないので、同じ位置に透明なボタン（.moon-hit）を重ねる
+    if (!hero.querySelector('.moon-hit')) {
+      const moon = el('button', 'moon-hit'); moon.type = 'button'; moon.setAttribute('aria-label', '月に話しかける');
+      moon.addEventListener('click', () => {
+        const days = Number.isFinite(start) ? Math.ceil((start - Date.now()) / DAY) : NaN;
+        const text = !Number.isFinite(days) ? 'まだ満ちる日が決まってへんねん。' : days > 0 ? `満月まで、あと${days}日やで。` : '今夜は満月や。展示、はじまってるで。';
+        hero.querySelector('.moon-talk')?.remove();
+        const bubble = el('span', 'moon-talk', text); bubble.setAttribute('role', 'status');
+        hero.append(bubble);
+        setTimeout(() => bubble.remove(), 3200);
+        secret('moon');
+      });
+      hero.append(moon);
+    }
     const nights = Math.max(0, Math.ceil(left));
     const label = el('span', 'sr-only', nights > 0 ? `開幕の満月まで、あと${nights}夜。` : '今夜は満月。展示が開いています。');
     hero.querySelector('.hero-copy')?.append(label);
@@ -85,6 +102,7 @@
       let done = false;
       const finish = () => {
         if (done) return; done = true;
+        secret('door');
         overlay.classList.add('is-leaving');
         setTimeout(() => { overlay.remove(); resolve(); }, 500);
         removeEventListener('keydown', finish);
@@ -134,7 +152,7 @@
     else parcel.append(el('span', '', '🎃'));
     body.append(parcel);
     ghost.append(body, el('span', 'courier-name', `${r.name} を届けにきたよ`));
-    ghost.addEventListener('click', () => go(`#creators?id=${encodeURIComponent(r.id)}`));
+    ghost.addEventListener('click', () => { secret('courier'); go(`#creators?id=${encodeURIComponent(r.id)}`); });
     ghost.addEventListener('animationend', e => { if (e.target === ghost) ghost.remove(); });
     post.lane.append(ghost);
   }
@@ -184,6 +202,7 @@
       button.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') light(); });
     });
     function celebrate() {
+      secret('lanterns');
       garland.classList.add('is-complete');
       if (reward) reward.hidden = false;
       if (reduced) return;
@@ -229,6 +248,7 @@
     const n = torch.pill?.querySelector('[data-found]');
     if (!n) return;
     n.textContent = torch.found >= torch.ghosts.length ? '全員みつけた！👻' : `隠れおばけ ${torch.found}/${torch.ghosts.length}`;
+    if (torch.ghosts.length && torch.found >= torch.ghosts.length) secret('torch');
   }
   function setTorch(on) {
     torch.on = on;
@@ -293,6 +313,7 @@
     const parts = joinParts();
     const overlay = el('div', `jfx jfx-${name}`); overlay.setAttribute('aria-hidden', 'true');
     document.body.append(overlay);
+    secret('joinfx');
     const ctx = {
       overlay, timers: [], frames: [], done: false,
       at(ms, fn) { this.timers.push(setTimeout(fn, ms)); },

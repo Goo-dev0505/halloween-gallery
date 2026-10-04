@@ -92,6 +92,8 @@
   if (typeof module !== 'undefined' && module.exports) module.exports = { httpsUrl, imageUrl, validDate, validateRows, carouselSlotCount, eventPresentation, demoRows, spinMessage, totalMessage };
   if (typeof document === 'undefined') return;
 
+  // しかけ探し（secrets.js）に「見つけた」を知らせる
+  function secret(id) { document.dispatchEvent(new CustomEvent('halloween:secret', { detail: { id } })); }
   function el(tag, className, text) {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -326,7 +328,7 @@
     const p = el('p', 'catch', text);
     if (!text) return p;
     p.title = text;
-    p.addEventListener('click', () => p.classList.toggle('is-open'));
+    p.addEventListener('click', () => { p.classList.toggle('is-open'); if (p.classList.contains('is-open')) secret('catch'); });
     return p;
   }
   function creatorCard(r) {
@@ -578,6 +580,11 @@
     carousel.items.forEach((item, i) => item.classList.toggle('is-winner', i === index));
     if (!r || !box) return;
     const { count, streak, total } = recordSpin(id);
+    // しかけ探し：ブレーキ・再会（2回目）・運営のツッコミ（通算10回）・幻の連続（2連続）
+    secret('brake');
+    if (count >= 2) secret('again');
+    if (total >= 10) secret('tsukkomi');
+    if (streak >= 2) secret('streak');
     const msg = spinMessage(r.name, count, streak);
     const item = carousel.items[index];
     paintSpinBadge(item);
@@ -615,6 +622,7 @@
     if (carousel.brake || !carousel.items.length) return;
     clearSpinResult();
     carousel.turbo = Math.max(0, Math.min(TURBO.length - 1, level));
+    if (carousel.turbo === TURBO.length - 1) secret('turbo'); // 爆速
     carousel.pauseUntil = 0;
     setTurboClass();
   }

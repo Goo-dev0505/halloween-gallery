@@ -1041,3 +1041,83 @@ a.award-sponsor-name:hover { color: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
   .award-q, .award-beam { animation: none; }
 }
+
+/* ---------- 27. しかけ探し（secrets.js）・押せる月 ---------- */
+/* 押せる月：.hero::before の月と同じ位置・大きさの透明ボタン */
+.moon-hit {
+  position: absolute; top: 9%; right: 8%; z-index: 3; width: clamp(64px, 9vw, 110px); aspect-ratio: 1;
+  border: 0; border-radius: 50%; background: transparent; cursor: pointer; padding: 0;
+}
+.moon-hit:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+.moon-talk {
+  position: absolute; top: calc(9% + clamp(64px, 9vw, 110px) + 10px); right: 8%; z-index: 3;
+  padding: 6px 12px; border: 1px solid var(--gold); border-radius: 12px; background: var(--surface);
+  color: var(--text); font-size: 13px; font-weight: 700; white-space: nowrap; animation: reward-in .3s ease both;
+}
+@media (max-width: 599px) {
+  .moon-hit { top: 3%; right: 6%; }
+  .moon-talk { top: calc(3% + 74px); right: 4%; }
+}
+
+/* 入口とフッターの「しかけ探し」入り口 */
+.secrets-open {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 4px; padding: 6px 14px;
+  border: 1px dashed var(--gold); border-radius: 999px; background: rgb(217 180 91 / 8%);
+  color: var(--text); font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.secrets-open:hover { border-style: solid; background: rgb(217 180 91 / 16%); }
+.secrets-open.is-footer { margin-top: 6px; font-size: 12px; }
+.secrets-count { padding: 0 8px; border-radius: 999px; background: var(--gold); color: var(--on-accent); font-family: var(--display); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+/* 発見の通知：画面の下にぽんと出る */
+.secret-toast {
+  position: fixed; left: 0; right: 0; margin-inline: auto; width: fit-content; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 95; /* 中央寄せは margin で（transform はアニメが使う） */
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 4px 10px;
+  max-width: calc(100% - 32px); padding: 10px 18px; border: 1px solid var(--accent); border-radius: 16px;
+  background: var(--surface); box-shadow: 0 10px 30px rgb(15 10 26 / 60%), 0 0 24px rgb(244 163 64 / 30%);
+  animation: reward-in .35s ease both; pointer-events: none;
+}
+.secret-toast-head { color: var(--accent); font-family: var(--display); }
+.secret-toast-name { font-weight: 700; }
+.secret-toast-count { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.secret-toast.is-bonus { border-color: #ffd54a; box-shadow: 0 10px 30px rgb(15 10 26 / 60%), 0 0 28px rgb(255 213 74 / 40%); }
+.secret-toast.is-bonus .secret-toast-head, .secret-toast.is-complete .secret-toast-head { color: #ffe08a; }
+
+/* 謎かけの一覧（ダイアログ） */
+.secrets-dialog {
+  width: min(720px, calc(100% - 32px)); max-height: calc(100dvh - 48px); padding: 0;
+  border: 4px double var(--gold); border-radius: 14px; background: var(--bg); color: var(--text);
+}
+.secrets-dialog::backdrop { background: rgb(10 6 20 / 72%); }
+.secrets-inner { display: grid; gap: 12px; padding: 18px 18px 16px; }
+.secrets-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.secrets-head h2 { margin: 0; font-size: 1.4rem; }
+.secrets-close { width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--text); cursor: pointer; }
+.secrets-lead { margin: 0; color: var(--muted); font-size: 14px; }
+.secrets-meter { display: flex; align-items: center; gap: 12px; font-family: var(--display); font-variant-numeric: tabular-nums; }
+.secrets-bar { flex: 1; height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.secrets-bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .4s ease; }
+.secrets-done { margin: 0; padding: 8px 12px; border-radius: 10px; background: rgb(244 163 64 / 14%); color: var(--accent); font-weight: 700; }
+.secrets-list { display: grid; gap: 14px; }
+.secrets-room { display: grid; gap: 8px; }
+.secrets-room h3 { margin: 0; display: flex; align-items: baseline; gap: 8px; font-size: 1rem; }
+.secrets-room h3 small { color: var(--muted); font-family: var(--body); font-size: 12px; font-variant-numeric: tabular-nums; }
+.secrets-room.is-bonus { padding-top: 10px; border-top: 1px dashed var(--line); }
+.secret-card { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.secret-card.is-found { border-color: var(--accent); }
+.secret-stamp { display: grid; place-items: center; width: 38px; height: 38px; border: 2px dashed var(--gold); border-radius: 50%; color: var(--gold); font-family: var(--display); }
+.secret-card.is-found .secret-stamp { border-style: solid; border-color: var(--accent); background: var(--accent); color: var(--on-accent); transform: rotate(-12deg); }
+.secret-body { display: grid; gap: 4px; min-width: 0; }
+.secret-body p { margin: 0; }
+.secret-name { color: var(--accent); font-weight: 700; }
+.secret-riddle { font-weight: 700; font-size: 14px; }
+.secret-riddle.is-dim { color: var(--muted); font-weight: 400; font-size: 13px; }
+.secret-note { color: var(--muted); font-size: 12px; }
+.secret-hint-btn { justify-self: start; padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
+.secret-hint { padding: 6px 10px; border-radius: 8px; background: var(--bg); color: var(--muted); font-size: 13px; }
+.secrets-foot { margin: 0; color: var(--muted); font-size: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.secrets-reset { padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) {
+  .secret-toast, .moon-talk { animation: none; }
+  .secrets-bar span { transition: none; }
+}

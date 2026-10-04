@@ -85,6 +85,8 @@
   /* 右側の額縁：状態によって中身が変わる */
   function frameBlock(award, st) {
     const wrap = el('div', 'award-frames');
+    // しかけ探し：額縁を押したら「特別賞の額縁」を見つけた扱い
+    wrap.addEventListener('click', () => document.dispatchEvent(new CustomEvent('halloween:secret', { detail: { id: 'award' } })));
     if (st === 'announced') {
       // 受賞者の数だけ額縁を並べる（2人が別々に選んだら2枚）
       const ws = winnersOf(award), multi = ws.length > 1;
