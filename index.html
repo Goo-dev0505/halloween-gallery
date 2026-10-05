@@ -33,6 +33,7 @@
   <script defer src="assets/fx.js?v=dev"></script>
   <script defer src="assets/award.js?v=dev"></script>
   <script defer src="assets/secrets.js?v=dev"></script>
+  <script defer src="assets/theme-song.js?v=dev"></script>
 </head>
 <body>
   <div class="floaties" aria-hidden="true"><span>👻</span><span>🎃</span><span>🦇</span><span>👻</span></div>
@@ -133,6 +134,15 @@
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- テーマ曲：site-config.js の themeSong から theme-song.js が描く。押すまでYouTubeは読み込まない -->
+    <section class="block song-section reveal" id="song" aria-labelledby="songTitle" hidden>
+      <div class="wrap">
+        <h2 id="songTitle">テーマ曲</h2>
+        <p class="section-intro" id="songIntro"></p>
+        <div class="song-stage" id="songStage"></div>
       </div>
     </section>
 

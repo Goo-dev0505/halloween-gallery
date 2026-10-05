@@ -1121,3 +1121,42 @@ a.award-sponsor-name:hover { color: var(--accent); }
   .secret-toast, .moon-talk { animation: none; }
   .secrets-bar span { transition: none; }
 }
+
+/* ==========================================================================
+   28. テーマ曲：金の額縁に飾ったスクリーン。押すまではサムネイルだけ
+   ========================================================================== */
+.song-section[hidden] { display: none; }
+.song-exhibit { margin: 0 auto; width: min(100%, 720px); }
+.song-screen {
+  position: relative; aspect-ratio: 16 / 9; padding: 8px; border: 6px double var(--gold); border-radius: 6px;
+  background: var(--bg-deep); box-shadow: inset 0 0 0 2px var(--bg-deep), var(--shadow);
+}
+.song-frame, .song-iframe { display: block; width: 100%; height: 100%; border: 0; border-radius: 3px; }
+.song-frame { position: relative; padding: 0; overflow: hidden; background: var(--surface); cursor: pointer; color: var(--text); font: inherit; }
+.song-thumb { width: 100%; height: 100%; object-fit: cover; opacity: .82; transition: opacity .3s, transform .4s; }
+.song-frame:hover .song-thumb, .song-frame:focus-visible .song-thumb { opacity: 1; transform: scale(1.02); }
+.song-frame:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.song-play {
+  position: absolute; inset: 50% auto auto 50%; width: 76px; height: 76px; margin: -38px 0 0 -38px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 0 6px rgb(244 163 64 / 28%), 0 10px 24px rgb(15 10 26 / 60%);
+}
+.song-play::after {
+  content: ""; position: absolute; inset: 50% auto auto 50%; margin: -14px 0 0 -9px;
+  border-style: solid; border-width: 14px 0 14px 24px; border-color: transparent transparent transparent var(--on-accent);
+}
+.song-frame:hover .song-play { background: var(--accent-deep); }
+.song-hint {
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 4px 14px; border-radius: 999px;
+  background: rgb(15 10 26 / 72%); font-size: 13px; white-space: nowrap;
+}
+.song-cap { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 4px 12px; margin-top: 10px; text-align: center; }
+.song-title { font-family: var(--display); font-size: 1.05rem; }
+.song-by { color: var(--muted); font-size: 13px; }
+.song-link { color: var(--mint); font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { .song-thumb { transition: none; } .song-frame:hover .song-thumb { transform: none; } }
+@media (max-width: 520px) {
+  /* スマホは額縁が低いので、再生ボタンを小さくして「押すと再生」と重ならないようにする */
+  .song-play { width: 56px; height: 56px; margin: -28px 0 0 -28px; box-shadow: 0 0 0 4px rgb(244 163 64 / 28%), 0 8px 18px rgb(15 10 26 / 60%); }
+  .song-play::after { margin: -10px 0 0 -6px; border-width: 10px 0 10px 17px; }
+  .song-hint { bottom: 8px; font-size: 12px; }
+}

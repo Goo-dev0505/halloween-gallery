@@ -58,6 +58,14 @@ window.HALLOWEEN_CONFIG = {
       sourceUrl: 'https://note.com/shirono_aru/n/n19949647b0d1',
       winners: [] }
   ],
+  // テーマ曲（入口に置くYouTube動画）。youtubeId を空にするとブロックごと消える
+  // 押すまでYouTubeは読み込まない（プライバシー強化モード youtube-nocookie.com で埋め込む）
+  themeSong: {
+    youtubeId: 'YkKQDvqFsss',
+    title: 'halloween art 2026',
+    by: 'KITAcore',
+    note: 'この展示のテーマ曲です。展示をめぐるおともにどうぞ。'
+  },
   announcementUrl: 'https://note.com/ktcrs1107/n/n397fe2a90d5c',
   launchArticleUrl: 'https://note.com/ktcrs1107/n/n01b002ed9e6e',
   // 正式参加の受付期間（入口の「受付中」バッジはこの間だけ出る）
