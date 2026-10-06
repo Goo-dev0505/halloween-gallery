@@ -1,5 +1,5 @@
 /* ==========================================================================
-   しかけ探し（12個＋幻の1個）
+   しかけ探し（12個＋幻の2個）
    - 各演出（fx.js / app.js / award.js）が 'halloween:secret' イベントで「見つけた」を知らせる。
    - 見つけたら画面下に「しかけ発見！」を出し、閲覧者のブラウザ（localStorage）に記録する。
    - 入口とフッターの「しかけ探し」から、謎かけの一覧（ダイアログ）を開ける。答えは見つけるまで伏せる。
@@ -23,7 +23,9 @@
     { id: 'catch', room: 'クリエイター', name: '紹介文の続き', riddle: '自己紹介の「…」の続き、気にならへん？', hint: 'カードの紹介文を押してみて。' },
     { id: 'torch', room: '美術館', name: '隠れおばけ探し', riddle: '電気を消して探検。暗闇のどこかに、だれかが隠れてる。', hint: '懐中電灯の光を近づけて。全員見つけたら発見。' },
     { id: 'joinfx', room: '参加する', name: '参加ページの演出', riddle: '「参加する」のページ、しばらくじっと眺めてると……。', hint: '何もさわらずに、待ってみて。', motion: true },
-    { id: 'streak', room: '幻', name: '幻の連続', riddle: '同じ人に、2回続けて止まったら……。', hint: '81人おるから、だいたい81回に1回。', bonus: true }
+    { id: 'streak', room: '幻', name: '幻の連続', riddle: '同じ人に、2回続けて止まったら……。', hint: '81人おるから、だいたい81回に1回。', bonus: true },
+    // 超速で回しっぱなしにするとメリーゴーランドが壊れる（app.js の crashCarousel）。動きを減らす設定では起きないので見つけた扱い
+    { id: 'crash', room: '幻', name: '超速の故障', riddle: '速さには、上には上がある。止めへんかったら……どうなる？', hint: 'いちばん上の速さで、ブレーキを踏まずにじっと待つ。', bonus: true, motion: true }
   ];
   const MAIN = SECRETS.filter(s => !s.bonus);
   const byId = Object.fromEntries(SECRETS.map(s => [s.id, s]));
@@ -79,6 +81,7 @@
       if (Object.values(log.counts || {}).some(n => n >= 2)) mark('again', { silent: true });
       if (log.streak >= 2) mark('streak', { silent: true });
     }
+    try { if (Number(localStorage.getItem('ha2026-crash-count')) >= 1) mark('crash', { silent: true }); } catch { /* 読めなくてもよい */ }
     // 動きを減らす設定では出ない演出は、見つけた扱いにする（損をしないように）
     if (reduced) SECRETS.filter(s => s.motion).forEach(s => mark(s.id, { silent: true }));
   }
@@ -97,8 +100,8 @@
     list.replaceChildren(...rooms.map(room => {
       const items = SECRETS.filter(s => s.room === room);
       const sec = el('section', `secrets-room${room === '幻' ? ' is-bonus' : ''}`);
-      const h = el('h3', '', room === '幻' ? '幻の13個目' : room);
-      if (room !== '幻') h.append(el('small', '', `${items.filter(s => found[s.id]).length}/${items.length}`));
+      const h = el('h3', '', room === '幻' ? '幻のしかけ（数には入らへん）' : room);
+      h.append(el('small', '', `${items.filter(s => found[s.id]).length}/${items.length}`));
       sec.append(h);
       items.forEach(s => {
         const on = Boolean(found[s.id]);

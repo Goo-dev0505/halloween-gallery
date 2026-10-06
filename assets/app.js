@@ -703,6 +703,7 @@
     const stage = $('carouselRing')?.closest('.stage');
     carousel.broken = true; carousel.turbo = 0; carousel.dragging = false; carousel.hovering = false;
     clearOverload(); setTurboClass(); lockCarouselControls(true);
+    secret('crash'); // しかけ探し：幻の「超速の故障」
     const rand = (min, max) => min + Math.random() * (max - min);
     carousel.items.forEach((item, i) => {
       // ふだんの位置から、外へ飛び出し・横へずれ・床へ落ちて、くるっと寝転ぶ
