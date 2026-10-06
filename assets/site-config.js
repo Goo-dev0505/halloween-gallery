@@ -32,11 +32,13 @@ window.HALLOWEEN_CONFIG = {
 「こんなん作ったで」って並べる場所。`,
   // 運営チーム：「この企画について」のメンバーカード、入口のクレジット行、フッターに表示
   // role は '主催' / '運営'。icon は任意（空なら 🎃）。HTTPS の画像URLか、assets/icons/ に置いた画像
+  // creatorId：参加クリエイターとしての ID。書くと入口の顔アイコンと運営チーム欄から、サイト内のその人のカードへ飛ぶ。
+  //            カードにも「主催」「運営」の印がつく。空なら従来どおり note へのリンク
   team: [
-    { role: '主催', name: 'KITAcore', url: 'https://note.com/ktcrs1107', icon: 'https://assets.st-note.com/production/uploads/images/229742136/75a87979bd25ec75d7a88eaf5feef751.png' },
-    { role: '運営', name: 'HONO', url: 'https://note.com/hospital_ph_hono', icon: 'assets/icons/hono-halloween.webp' },
-    { role: '運営', name: '考える赤柴', url: 'https://note.com/eager_thyme9842', icon: 'assets/icons/akashiba-halloween.webp' },
-    { role: '運営', name: 'はしゃも', url: 'https://note.com/hasyamo', icon: 'assets/icons/hasyamo-halloween.webp' }
+    { role: '主催', name: 'KITAcore', creatorId: 'c001', url: 'https://note.com/ktcrs1107', icon: 'https://assets.st-note.com/production/uploads/images/229742136/75a87979bd25ec75d7a88eaf5feef751.png' },
+    { role: '運営', name: 'HONO', creatorId: 'c081', url: 'https://note.com/hospital_ph_hono', icon: 'assets/icons/hono-halloween.webp' },
+    { role: '運営', name: '考える赤柴', creatorId: 'c082', url: 'https://note.com/eager_thyme9842', icon: 'assets/icons/akashiba-halloween.webp' },
+    { role: '運営', name: 'はしゃも', creatorId: 'c005', url: 'https://note.com/hasyamo', icon: 'assets/icons/hasyamo-halloween.webp' }
   ],
   // 協賛：「この企画について」の協賛カード、入口のクレジット行、フッターに表示
   sponsors: [

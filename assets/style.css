@@ -1077,6 +1077,7 @@ a.award-sponsor-name:hover { color: var(--accent); }
   background: var(--surface); box-shadow: 0 10px 30px rgb(15 10 26 / 60%), 0 0 24px rgb(244 163 64 / 30%);
   animation: reward-in .35s ease both; pointer-events: none;
 }
+.secret-toast[hidden] { display: none; } /* display:flex が hidden を上書きして、空の枠が出っぱなしになるのを防ぐ */
 .secret-toast-head { color: var(--accent); font-family: var(--display); }
 .secret-toast-name { font-weight: 700; }
 .secret-toast-count { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
@@ -1160,3 +1161,22 @@ a.award-sponsor-name:hover { color: var(--accent); }
   .song-play::after { margin: -10px 0 0 -6px; border-width: 10px 0 10px 17px; }
   .song-hint { bottom: 8px; font-size: 12px; }
 }
+
+/* ==========================================================================
+   29. 運営チーム：入口の顔ならびと、クリエイターカードの「主催／運営」の印
+   ========================================================================== */
+.hero-team { grid-column: 1 / -1; margin-top: 10px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.hero-team[hidden] { display: none; }
+.hero-team-label { margin: 0 0 8px; color: var(--mint); font-size: 12px; font-weight: 700; letter-spacing: .04em; }
+.hero-team-label::after { content: " →"; }
+.hero-team-list { display: flex; flex-wrap: wrap; gap: 10px 14px; margin: 0; padding: 0; list-style: none; }
+.hero-face { display: grid; justify-items: center; gap: 4px; width: 64px; color: var(--text); text-decoration: none; }
+.hero-face .avatar { width: 48px; height: 48px; border: 2px solid var(--gold); border-radius: 50%; overflow: hidden; transition: transform .25s, border-color .25s, box-shadow .25s; }
+.hero-face .avatar img { width: 100%; height: 100%; object-fit: cover; }
+.hero-face:hover .avatar, .hero-face:focus-visible .avatar { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 6px 16px rgb(255 122 26 / 30%); }
+.hero-face:focus-visible { outline: none; }
+.hero-face:focus-visible .hero-face-name { text-decoration: underline; }
+.hero-face-name { max-width: 100%; overflow: hidden; color: var(--muted); font-size: 11px; line-height: 1.3; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.staff-mark { display: inline-block; margin-bottom: 2px; padding: 2px 8px; border: 1px solid var(--gold-soft); border-radius: 999px; background: rgb(217 180 91 / 12%); color: var(--gold); font-size: 11px; font-weight: 700; line-height: 1.5; }
+.card.is-staff { border-color: var(--gold-soft); }
+@media (prefers-reduced-motion: reduce) { .hero-face .avatar { transition: none; } .hero-face:hover .avatar { transform: none; } }

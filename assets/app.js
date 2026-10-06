@@ -213,6 +213,16 @@
   }
   /* 運営チーム・協賛：site-config.js の team / sponsors から描く。note 以外のプロフィールURLは出さない */
   function teamMembers() { return (Array.isArray(config.team) ? config.team : []).filter(m => m && m.name && httpsUrl(m.url, 'note.com')); }
+  // 運営メンバーの「サイト内のカード」への行き先。creatorId が無ければ note のプロフィールへ
+  const validCreatorId = id => /^c\d{3,}$/.test(String(id || ''));
+  function cardHash(m) { return validCreatorId(m.creatorId) ? `#creators?id=${m.creatorId}` : ''; }
+  function memberLink(m, className) {
+    const hash = cardHash(m);
+    if (!hash) return link('', httpsUrl(m.url, 'note.com'), className);
+    const a = el('a', className); a.href = hash; return a; // サイト内リンク（ルーターが画面を切り替えて、カードを光らせる）
+  }
+  // 参加クリエイターのカードに付ける印：creatorId → '主催' / '運営'
+  const STAFF = new Map(teamMembers().filter(m => validCreatorId(m.creatorId)).map(m => [m.creatorId, m.role === '主催' ? '主催' : '運営']));
   function sponsorItems() { return (Array.isArray(config.sponsors) ? config.sponsors : []).filter(s => s && s.name && httpsUrl(s.url)); }
   // 「ラベル：A・B」形式のクレジット行。名前はそれぞれ note へのリンク
   function creditLine(node, label, items) {
@@ -228,8 +238,8 @@
     const block = $('teamBlock');
     if (block && (team.length || sponsors.length)) {
       $('teamList')?.replaceChildren(...team.map(m => {
-        const card = link('', httpsUrl(m.url, 'note.com'), 'member');
-        card.setAttribute('aria-label', `${m.role || '運営'}・${m.name}のnoteプロフィール`);
+        const card = memberLink(m, 'member');
+        card.setAttribute('aria-label', `${m.role || '運営'}・${m.name}の${cardHash(m) ? 'クリエイターカードを見る' : 'noteプロフィール'}`);
         const icon = imageUrl(m.icon);
         append(card,
           icon ? imageOrPlaceholder(icon, '', 'avatar', 64, 64) : el('span', 'avatar image-placeholder', '🎃'),
@@ -247,6 +257,19 @@
         return append(card, media, body);
       }));
       block.hidden = false;
+    }
+    // 入口の主催者カード：運営チームの顔をならべる。押すとその人のクリエイターカードへ
+    const heroTeam = $('heroTeam'), faces = team.filter(m => cardHash(m));
+    if (heroTeam && faces.length) {
+      $('heroTeamList')?.replaceChildren(...faces.map(m => {
+        const a = memberLink(m, 'hero-face');
+        a.setAttribute('aria-label', `${m.role || '運営'}・${m.name}のクリエイターカードを見る`);
+        const icon = imageUrl(m.icon);
+        append(a, icon ? imageOrPlaceholder(icon, '', 'avatar', 48, 48) : el('span', 'avatar image-placeholder', '🎃'),
+          el('span', 'hero-face-name', m.name));
+        return append(el('li'), a);
+      }));
+      heroTeam.hidden = false;
     }
     // 入口のクレジット行：運営と協賛があれば差し替える（なければ元の制作クレジットのまま）
     const hero = $('heroCredits');
@@ -335,6 +358,7 @@
     const card = el('article', 'card'); card.id = `creator-${r.id}`; card.tabIndex = -1;
     if (r.isNew) append(card, badge());
     const top = el('div', 'top'), heading = el('div');
+    if (STAFF.has(r.id)) { card.classList.add('is-staff'); append(heading, el('span', 'staff-mark', `🎃 ${STAFF.get(r.id)}`)); }
     append(heading, el('h3', '', r.name), catchText(r.catch));
     append(top, avatar(r), heading); append(card, top);
     if (r.tagList.length) {
