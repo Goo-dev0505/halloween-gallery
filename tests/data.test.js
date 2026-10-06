@@ -113,4 +113,10 @@ test('超速で壊した回数でセリフが変わる', () => {
   assert.match(crashMessage(4), /4回目.*わざと/);
   assert.match(crashMessage(7), /修理代/);
   assert.match(crashMessage(12), /12回も/);
+  assert.match(crashMessage(20), /ほんまアホなん/);
+  assert.match(crashMessage(55), /ハマりすぎ/);
+  assert.match(crashMessage(70), /何を目指して/);
+  assert.match(crashMessage(99), /何を目指して/);
+  assert.match(crashMessage(100), /殿堂入りおめでとう/);
+  assert.match(crashMessage(250), /250回目.*殿堂入り/);
 });
