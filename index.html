@@ -211,17 +211,20 @@
           <div class="stage" id="carouselStage" aria-label="クリエイター表示エリア">
             <span class="pole" aria-hidden="true"></span>
             <span class="floor" aria-hidden="true"></span>
+            <!-- 超速で回し続けたときの警告（ギシギシ → ネジが飛ぶ → 壊れる） -->
+            <p class="overload-warn" id="overloadWarn" role="status" hidden></p>
             <div class="carousel-ring" id="carouselRing" aria-live="polite">
               <p class="empty-note">展示の準備中です。</p>
             </div>
           </div>
-          <!-- 回す速さを選ぶ（高速回転ルーレット）。ブレーキでだれか1人の前に止まる -->
+          <!-- 回す速さを選ぶ（高速回転ルーレット）。ブレーキでだれか1人の前に止まる。超速は止めないと壊れる -->
           <div class="speed-row">
             <div class="seg speed-seg" id="carouselSpeeds" role="group" aria-label="回す速さを選ぶ">
               <button type="button" data-speed="0" aria-pressed="true">🐢 ふつう</button>
               <button type="button" data-speed="1" aria-pressed="false">🌀 速い</button>
               <button type="button" data-speed="2" aria-pressed="false">🌪 めっちゃ速い</button>
               <button type="button" data-speed="3" aria-pressed="false">💫 爆速</button>
+              <button type="button" data-speed="4" aria-pressed="false">☄️ 超速</button>
             </div>
           </div>
           <div class="carousel-controls" role="group" aria-label="メリーゴーランド操作">

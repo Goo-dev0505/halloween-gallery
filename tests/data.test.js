@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { httpsUrl, validDate, validateRows, carouselSlotCount, eventPresentation, demoRows, spinMessage, totalMessage } = require('../assets/app.js');
+const { httpsUrl, validDate, validateRows, carouselSlotCount, eventPresentation, demoRows, spinMessage, totalMessage, crashMessage } = require('../assets/app.js');
 
 const now = Date.parse('2026-09-26T12:00:00+09:00');
 const creator = {
@@ -105,4 +105,12 @@ test('通算ブレーキの節目だけツッコミが出る', () => {
   assert.match(totalMessage(100), /住んでる/);
   assert.equal(totalMessage(150), '');
   assert.match(totalMessage(300), /運営より/);
+});
+
+test('超速で壊した回数でセリフが変わる', () => {
+  assert.match(crashMessage(1), /ブレーキ踏め/);
+  assert.match(crashMessage(2), /また壊した/);
+  assert.match(crashMessage(4), /4回目.*わざと/);
+  assert.match(crashMessage(7), /修理代/);
+  assert.match(crashMessage(12), /12回も/);
 });

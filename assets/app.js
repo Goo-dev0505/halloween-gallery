@@ -13,11 +13,20 @@
   const state = { rows: [], order: [], filter: 'all', query: '', room: 'all', failed: false };
   const SPIN_SECONDS = 24; // メリーゴーランドが1周する秒数
   // playing：自動回転のオン／オフ。「動きを減らす」設定の人は止めた状態から始め、ボタンで回せる
-  const carousel = { items: [], angle: 0, step: 0, radius: 0, frame: 0, last: 0, pauseUntil: 0, hovering: false, focused: false, playing: !reduced, dragging: false, startX: 0, startAngle: 0, moved: false, turbo: 0, brake: null };
-  /* 高速回転ルーレット：速さボタン（ふつう／速い／めっちゃ速い／爆速）で選び、
+  // overloadStart / overload：超速で回し続けた時間と軋みの段階。broken：壊れて部品が散らばっている間 true
+  const carousel = { items: [], angle: 0, step: 0, radius: 0, frame: 0, last: 0, pauseUntil: 0, hovering: false, focused: false, playing: !reduced, dragging: false, startX: 0, startAngle: 0, moved: false, turbo: 0, brake: null, overloadStart: 0, overload: 0, broken: false, repairTimer: 0 };
+  /* 高速回転ルーレット：速さボタン（ふつう／速い／めっちゃ速い／爆速／超速）で選び、
      「ブレーキ」でだれか1人の前に止まる。TURBO[n] = 通常速度の何倍か */
-  const TURBO = [1, 6, 18, 60];
+  const TURBO = [1, 6, 18, 60, 150];
   const BRAKE_MS = 2800; // ブレーキをかけてから止まるまで
+  /* 超速（いちばん上の段）は回しっぱなしにすると壊れる。
+     WARN[0] 秒でギシギシ → WARN[1] 秒でネジが飛ぶ → CRASH 秒でカードが散らばる。
+     「動きを減らす」設定の人には壊れる演出を出さない */
+  const SUPER = TURBO.length - 1;
+  const OVERLOAD_WARN = [3000, 6000];
+  const OVERLOAD_CRASH = 9000;
+  const OVERLOAD_TEXT = ['', '⚠ ギシギシいうてる……', '🔩 ネジ飛んでる！ はよブレーキ！'];
+  const REPAIR_MS = 1100; // 直すボタンからカードが元の位置に戻るまで
 
   function httpsUrl(value, host) {
     try {
@@ -89,7 +98,7 @@
     });
     return out;
   }
-  if (typeof module !== 'undefined' && module.exports) module.exports = { httpsUrl, imageUrl, validDate, validateRows, carouselSlotCount, eventPresentation, demoRows, spinMessage, totalMessage };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { httpsUrl, imageUrl, validDate, validateRows, carouselSlotCount, eventPresentation, demoRows, spinMessage, totalMessage, crashMessage };
   if (typeof document === 'undefined') return;
 
   // しかけ探し（secrets.js）に「見つけた」を知らせる
@@ -489,6 +498,10 @@
     const elapsed = carousel.last ? Math.min(64, now - carousel.last) : 16;
     carousel.last = now;
     const base = 360 / (SPIN_SECONDS * 1000); // 通常時の1ミリ秒あたりの角度
+    if (carousel.broken) {
+      // 壊れている間は回さない（カードは CSS の transition で散らばる／戻る）
+      carousel.frame = requestAnimationFrame(tick); return;
+    }
     if (carousel.brake) {
       // ブレーキ中：狙った人の角度へ、だんだん遅くなりながら止める（easeOutCubic）
       const b = carousel.brake, t = Math.min(1, (now - b.start) / BRAKE_MS);
@@ -496,6 +509,7 @@
       if (t >= 1) landTurbo();
     } else if (carousel.turbo > 0) {
       if (!carousel.dragging) carousel.angle += elapsed * base * TURBO[carousel.turbo]; // 高速中はマウスが乗っていても止めない
+      if (carousel.turbo === SUPER && !reduced) checkOverload(now);
     } else if (carousel.playing && !carousel.dragging && !carousel.hovering && !carousel.focused && now > carousel.pauseUntil) {
       // カードにマウスが乗っている・キーボードで選んでいる・ドラッグ中・操作直後は回さない
       carousel.angle += elapsed * base;
@@ -511,18 +525,42 @@
   }
   function setTurboClass() {
     const stage = $('carouselRing')?.closest('.stage');
-    stage?.classList.remove('turbo-1', 'turbo-2', 'turbo-3', 'is-braking');
+    stage?.classList.remove('turbo-1', 'turbo-2', 'turbo-3', 'turbo-4', 'is-braking', 'overload-1', 'overload-2', 'is-broken');
     if (carousel.turbo > 0) stage?.classList.add(`turbo-${carousel.turbo}`);
     if (carousel.brake) stage?.classList.add('is-braking');
+    if (carousel.overload > 0) stage?.classList.add(`overload-${carousel.overload}`);
+    if (carousel.broken) stage?.classList.add('is-broken');
+    $('carousel')?.classList.toggle('is-broken', carousel.broken);
+    const warn = $('overloadWarn');
+    if (warn) { warn.textContent = OVERLOAD_TEXT[carousel.overload]; warn.hidden = !carousel.overload; }
     $('carouselSpeeds')?.querySelectorAll('[data-speed]').forEach(b => b.setAttribute('aria-pressed', String(!carousel.brake && Number(b.dataset.speed) === carousel.turbo)));
     const brake = $('carouselBrake');
     if (brake) {
       brake.textContent = carousel.brake ? '…止まるまで待ってな' : '🛑 ブレーキ';
-      brake.disabled = Boolean(carousel.brake) || !state.rows.length;
+      brake.disabled = Boolean(carousel.brake) || carousel.broken || !state.rows.length;
       brake.classList.toggle('is-hot', carousel.turbo >= 2);
+      brake.classList.toggle('is-panic', carousel.overload >= 2);
     }
   }
-  function resetTurbo() { carousel.turbo = 0; carousel.brake = null; setTurboClass(); }
+  function resetTurbo() {
+    clearTimeout(carousel.repairTimer);
+    if (carousel.broken) clearSpinResult(); // 壊れたまま作り直したら「直す」の案内も消す
+    carousel.turbo = 0; carousel.brake = null; carousel.broken = false;
+    $('carouselRing')?.closest('.stage')?.classList.remove('is-repairing');
+    clearOverload(); setTurboClass();
+  }
+  function clearOverload() { carousel.overloadStart = 0; carousel.overload = 0; }
+  // 超速で回し続けた時間を測り、段階が変わったら見た目を切り替える。限界を超えたら壊す
+  function checkOverload(now) {
+    if (!carousel.overloadStart) carousel.overloadStart = now;
+    const t = now - carousel.overloadStart;
+    if (t >= OVERLOAD_CRASH) { crashCarousel(); return; }
+    const level = t >= OVERLOAD_WARN[1] ? 2 : t >= OVERLOAD_WARN[0] ? 1 : 0;
+    if (level === carousel.overload) return;
+    carousel.overload = level;
+    setTurboClass();
+    if (level === 2) burst($('carouselRing')?.closest('.stage'), ['🔩', '⚙️', '🔩', '💨', '🔩', '⚙️']); // ネジが飛ぶ
+  }
   // 表側（正面）にいる実在の人カードの中から、止まる相手を選ぶ
   function brakeTurbo() {
     const choices = carousel.items.map((item, i) => ({ i, id: item.querySelector('[data-creator-id]')?.dataset.creatorId })).filter(c => c.id);
@@ -531,14 +569,14 @@
     const from = carousel.angle;
     let to = pickOne.i * carousel.step;
     while (to < from + 720) to += 360; // 最低2周はしてから止まる
-    carousel.brake = { from, to, start: performance.now(), id: pickOne.id, index: pickOne.i };
-    setTurboClass();
+    carousel.brake = { from, to, start: performance.now(), id: pickOne.id, index: pickOne.i, close: carousel.overload >= 2 };
+    clearOverload(); setTurboClass();
   }
   function landTurbo() {
     const b = carousel.brake; carousel.brake = null; carousel.turbo = 0;
     carousel.angle = b.to % 360;
     carousel.pauseUntil = performance.now() + 5000; // 止まった人をしばらく見せる
-    setTurboClass(); showSpinResult(b.id, b.index);
+    setTurboClass(); showSpinResult(b.id, b.index, b.close);
   }
   /* ---------- ルーレットの記録：だれに何回止まったか（閲覧者のブラウザに保存） ---------- */
   const SPIN_KEY = 'ha2026-spin-log';
@@ -599,7 +637,7 @@
     item.append(box);
     setTimeout(() => box.remove(), 1500);
   }
-  function showSpinResult(id, index) {
+  function showSpinResult(id, index, close = false) {
     const r = state.rows.find(row => row.id === id), box = $('spinResult');
     carousel.items.forEach((item, i) => item.classList.toggle('is-winner', i === index));
     if (!r || !box) return;
@@ -616,7 +654,8 @@
     if (msg.level === 'love' || msg.level === 'follow') burst(item, ['💘', '💕', '💗', '💘', '💞', '💕']);
     if (msg.level === 'king') burst(item, ['👑', '✨', '🎉', '✨', '👑', '🎉']);
     if (msg.level === 'miracle') burst(item, ['🎰', '💰', '✨', '🎉', '💰', '🎰', '✨', '🎉']);
-    const tsukkomi = totalMessage(total);
+    // ネジが飛んでから踏んだ人には「ギリギリセーフ」を足す
+    const tsukkomi = [close ? '😮‍💨 ギリギリセーフ！ 壊れるとこやったで。' : '', totalMessage(total)].filter(Boolean).join(' ');
     if (total === 50 || total === 100) burst(item, ['🎃', '🎃', '👻', '🎃', '🦇', '🎃']);
     if ((msg.level === 'streak' || msg.level === 'miracle' || total === 50) && !reduced) {
       const stage = $('carouselRing')?.closest('.stage');
@@ -641,24 +680,91 @@
     $('spinResult')?.setAttribute('hidden', '');
     carousel.items.forEach(item => item.classList.remove('is-winner'));
   }
+  /* ---------- 超速の故障：ブレーキを踏まずに回し続けるとカードが飛び散る ---------- */
+  const CRASH_KEY = 'ha2026-crash-count'; // 何回壊したか（閲覧者のブラウザに保存）
+  function recordCrash() {
+    let n = 0;
+    try { n = Number(localStorage.getItem(CRASH_KEY)) || 0; } catch { /* 読めなくても遊べる */ }
+    n += 1;
+    try { localStorage.setItem(CRASH_KEY, String(n)); } catch { /* 保存できなくても遊べる */ }
+    return n;
+  }
+  // 通算の故障回数でセリフを変える（上ほど回数が多い）
+  function crashMessage(n) {
+    if (n >= 10) return `🏚 ${n}回も壊した人、初めて見たわ。`;
+    if (n >= 5) return `🔧 ${n}回目の故障……修理代、請求するで。`;
+    if (n >= 3) return `💥 ${n}回目の故障。わざとやろ？`;
+    if (n === 2) return '💥 また壊したん！？ 直す身にもなってや。';
+    return '💥 壊れてもうた！ だからブレーキ踏めって言うたやん……';
+  }
+  // 各カードの「ふだんの位置」。散らばったあと、ここへ戻す
+  function homeTransform(i) { return `rotateY(${i * carousel.step}deg) translateZ(${carousel.radius}px)`; }
+  function crashCarousel() {
+    const stage = $('carouselRing')?.closest('.stage');
+    carousel.broken = true; carousel.turbo = 0; carousel.dragging = false; carousel.hovering = false;
+    clearOverload(); setTurboClass(); lockCarouselControls(true);
+    const rand = (min, max) => min + Math.random() * (max - min);
+    carousel.items.forEach((item, i) => {
+      // ふだんの位置から、外へ飛び出し・横へずれ・床へ落ちて、くるっと寝転ぶ
+      item.style.setProperty('--fly-delay', `${Math.round(rand(0, 160))}ms`);
+      item.style.transform = `${homeTransform(i)} translate3d(${rand(-140, 140)}px, ${rand(70, 120)}px, ${rand(40, 200)}px) rotateX(${rand(60, 85)}deg) rotateZ(${rand(-170, 170)}deg)`;
+    });
+    burst(stage, ['💥', '🔩', '⚙️', '🔧', '💥', '🔩', '⚙️', '🎃']);
+    if (stage) { stage.classList.remove('is-jolt'); void stage.offsetWidth; stage.classList.add('is-jolt'); }
+    showCrashResult(recordCrash());
+  }
+  function showCrashResult(n) {
+    const box = $('spinResult'); if (!box) return;
+    const fix = el('button', 'act hot', '🔧 直す'); fix.type = 'button';
+    fix.addEventListener('click', repairCarousel, { once: true });
+    box.className = 'spin-result is-crash';
+    box.replaceChildren(
+      el('span', 'spin-result-text', crashMessage(n)),
+      append(el('span', 'spin-result-actions'), fix),
+      append(el('span', 'spin-result-foot'), el('span', 'spin-result-meta', `通算${n}回 壊した`))
+    );
+    box.hidden = false;
+    fix.focus({ preventScroll: true });
+  }
+  // 直す：カードをふだんの位置へ戻し（transition で組み上がる）、戻りきったら操作を返す
+  function repairCarousel() {
+    const stage = $('carouselRing')?.closest('.stage');
+    clearSpinResult();
+    stage?.classList.add('is-repairing');
+    carousel.items.forEach((item, i) => { item.style.transform = homeTransform(i); });
+    clearTimeout(carousel.repairTimer);
+    carousel.repairTimer = setTimeout(() => {
+      stage?.classList.remove('is-repairing');
+      carousel.broken = false; carousel.last = 0;
+      carousel.pauseUntil = performance.now() + 1500; // 直った姿をちょっと見せる
+      setTurboClass(); lockCarouselControls(false);
+    }, reduced ? 0 : REPAIR_MS);
+  }
+  // 壊れている間は 前へ／次へ／止める／速さ を押せなくする（ブレーキは setTurboClass 側）
+  function lockCarouselControls(locked) {
+    ['carouselPrev', 'carouselNext', 'carouselToggle'].forEach(id => { if ($(id)) $(id).disabled = locked; });
+    $('carouselSpeeds')?.querySelectorAll('button').forEach(b => { b.disabled = locked; });
+  }
   // 速さボタン：押した速さでそのまま回る（ふつう＝通常の自動回転に戻す）
   function setSpeed(level) {
-    if (carousel.brake || !carousel.items.length) return;
+    if (carousel.brake || carousel.broken || !carousel.items.length) return;
     clearSpinResult();
-    carousel.turbo = Math.max(0, Math.min(TURBO.length - 1, level));
-    if (carousel.turbo === TURBO.length - 1) secret('turbo'); // 爆速
+    const next = Math.max(0, Math.min(TURBO.length - 1, level));
+    if (next !== carousel.turbo) clearOverload(); // 段を変えたら軋みはリセット（超速に入り直すと0秒から）
+    carousel.turbo = next;
+    if (carousel.turbo >= 3) secret('turbo'); // 爆速（と、その上の超速）
     carousel.pauseUntil = 0;
     setTurboClass();
   }
   // ブレーキ：どの速さからでも押せる。動きを減らす設定の人は回さずにその場で1人を選ぶ
   function pressBrake() {
-    if (carousel.brake || !carousel.items.length) return;
+    if (carousel.brake || carousel.broken || !carousel.items.length) return;
     clearSpinResult();
     brakeTurbo();
     if (reduced && carousel.brake) landTurbo();
     paintCarousel();
   }
-  function turnCarousel(direction) { if (!carousel.step) return; carousel.angle = Math.round(carousel.angle / carousel.step + direction) * carousel.step; paintCarousel(); pauseCarousel(); }
+  function turnCarousel(direction) { if (!carousel.step || carousel.broken) return; carousel.angle = Math.round(carousel.angle / carousel.step + direction) * carousel.step; paintCarousel(); pauseCarousel(); }
   function focusCard(node) {
     if (!node) return;
     node.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
@@ -770,7 +876,7 @@
     });
     $('carouselPrev')?.addEventListener('click', () => turnCarousel(-1));
     $('carouselNext')?.addEventListener('click', () => turnCarousel(1));
-    $('carouselToggle')?.addEventListener('click', () => { carousel.playing = !carousel.playing; carousel.pauseUntil = 0; syncCarouselToggle(); });
+    $('carouselToggle')?.addEventListener('click', () => { if (carousel.broken) return; carousel.playing = !carousel.playing; carousel.pauseUntil = 0; syncCarouselToggle(); });
     $('carouselSpeeds')?.addEventListener('click', e => { const b = e.target.closest('[data-speed]'); if (b && !b.disabled) setSpeed(Number(b.dataset.speed)); });
     $('carouselBrake')?.addEventListener('click', pressBrake);
     const stage = $('carouselRing')?.closest('.stage') || $('carousel');
@@ -780,7 +886,7 @@
       stage.addEventListener('mouseleave', () => { carousel.hovering = false; });
       stage.addEventListener('focusin', e => { carousel.focused = Boolean(e.target.closest('.cc')); });
       stage.addEventListener('focusout', () => { carousel.focused = false; });
-      stage.addEventListener('pointerdown', e => { if (e.target.closest('button') && e.pointerType === 'mouse') return; carousel.dragging = true; carousel.moved = false; carousel.startX = e.clientX; carousel.startAngle = carousel.angle; stage.setPointerCapture?.(e.pointerId); });
+      stage.addEventListener('pointerdown', e => { if (carousel.broken || (e.target.closest('button') && e.pointerType === 'mouse')) return; carousel.dragging = true; carousel.moved = false; carousel.startX = e.clientX; carousel.startAngle = carousel.angle; stage.setPointerCapture?.(e.pointerId); });
       stage.addEventListener('pointermove', e => { if (!carousel.dragging) return; const delta = e.clientX - carousel.startX; if (Math.abs(delta) > 6) carousel.moved = true; carousel.angle = carousel.startAngle - delta * 0.35; paintCarousel(); });
       stage.addEventListener('pointerup', () => { carousel.dragging = false; pauseCarousel(); });
       stage.addEventListener('pointercancel', () => { carousel.dragging = false; pauseCarousel(); });
