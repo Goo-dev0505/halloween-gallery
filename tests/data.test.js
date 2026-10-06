@@ -118,6 +118,7 @@ test('超速で壊した回数でセリフが変わる', () => {
   assert.match(crashMessage(50), /ハマりすぎ/);
   assert.match(crashMessage(70), /何を目指して/);
   assert.match(crashMessage(100), /殿堂入りおめでとう/);
+  assert.match(crashMessage(101), /勇者たけし/);
   // それ以外はいつもの修理代
-  for (const n of [11, 19, 21, 55, 99, 101, 250]) assert.match(crashMessage(n), new RegExp(`${n}回目の故障.*修理代`));
+  for (const n of [11, 19, 21, 55, 99, 102, 250]) assert.match(crashMessage(n), new RegExp(`${n}回目の故障.*修理代`));
 });
