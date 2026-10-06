@@ -112,11 +112,12 @@ test('超速で壊した回数でセリフが変わる', () => {
   assert.match(crashMessage(2), /また壊した/);
   assert.match(crashMessage(4), /4回目.*わざと/);
   assert.match(crashMessage(7), /修理代/);
-  assert.match(crashMessage(12), /12回も/);
+  // キリのいい回数だけ特別なひと言
+  assert.match(crashMessage(10), /10回も.*初めて見た/);
   assert.match(crashMessage(20), /ほんまアホなん/);
-  assert.match(crashMessage(55), /ハマりすぎ/);
+  assert.match(crashMessage(50), /ハマりすぎ/);
   assert.match(crashMessage(70), /何を目指して/);
-  assert.match(crashMessage(99), /何を目指して/);
   assert.match(crashMessage(100), /殿堂入りおめでとう/);
-  assert.match(crashMessage(250), /250回目.*殿堂入り/);
+  // それ以外はいつもの修理代
+  for (const n of [11, 19, 21, 55, 99, 101, 250]) assert.match(crashMessage(n), new RegExp(`${n}回目の故障.*修理代`));
 });
