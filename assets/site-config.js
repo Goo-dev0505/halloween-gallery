@@ -58,6 +58,13 @@ window.HALLOWEEN_CONFIG = {
       imageAlt: 'カフェのテーブルでジャンケンをするふたり。黒板に「入賞者が被った場合は、ねんころちゃんとジャンケンで賞の取り合いをします」',
       imageCaption: '被ったらジャンケンで決着',
       sourceUrl: 'https://note.com/shirono_aru/n/n19949647b0d1',
+      winners: [] },
+    { name: 'ナオユキ賞',
+      selectors: [ { creatorId: 'c056', name: 'ナオユキ' } ],
+      message: 'ナオユキさんが1名を選びます。作品に加え、開催中のコメント、作品の紹介・応援、企画の発信、交流を広げる活動も選考の視点です。',
+      prize: 'ナオユキさんから受賞者1名へ直接1,000円のチップ', announceLabel: '',
+      imageCaption: 'ナオユキさんが選ぶ1名を発表予定',
+      sourceUrl: 'https://note.com/eager_thyme9842/n/nacab3c9ae27a',
       winners: [] }
   ],
   // テーマ曲（入口に置くYouTube動画）。youtubeId を空にするとブロックごと消える
