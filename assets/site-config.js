@@ -3,7 +3,7 @@ window.HALLOWEEN_CONFIG = {
   // 見出しの行分け（任意）。指定がなければ siteName を1行で表示
   siteTitleLines: ['ハロウィンアート', '2026'],
   shortDescription: '作品を入口に、人へ会いにいく展示会。',
-  phase: 'preview',
+  phase: 'open',
   demoMode: false,
   // 告知記事の「10/20〜31 展示」に合わせる。時刻は記事に記載がないため 0:00〜23:59 と仮置き
   eventStartAt: '2026-10-20T00:00:00+09:00',
